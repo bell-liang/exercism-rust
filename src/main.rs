@@ -33,4 +33,16 @@ fn main() {
                         .map(|n| verse(n))
                         .collect::<Vec<_>>()
                         .join("\n"));
+    let mut out: Vec<String> = vec![];
+    let digits = "92017";
+    let len = 2;
+    for i in 0..(digits.len()-len+1) {
+        out.push(digits.get(i..(i+len)).unwrap().to_string());
+    }
+    println!("{:?}", out);
+
+    let num = 5_u32;
+    let out: Vec<u32> = num.to_string().chars().map(|c| c.to_digit(10).unwrap()).collect::<Vec<u32>>();
+    let len = out.len() as u32;
+    println!("{:?}, {}", out, len);
 }

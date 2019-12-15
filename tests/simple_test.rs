@@ -747,3 +747,132 @@ fn square_sixty_five_panics() {
 fn total_sums_all_squares() {
    assert_eq!(total(), 18_446_744_073_709_551_615);
 }
+
+// 13
+#[test]
+fn test_answer() {
+   assert_eq!(find(), Some(31875000));
+}
+
+// 14
+#[test]
+fn test_no_factors() {
+   assert_eq!(factors(1), vec![]);
+}
+
+#[test]
+//#[ignore]
+fn test_prime_number() {
+   assert_eq!(factors(2), vec![2]);
+}
+
+#[test]
+//#[ignore]
+fn test_square_of_a_prime() {
+   assert_eq!(factors(9), vec![3, 3]);
+}
+
+#[test]
+//#[ignore]
+fn test_cube_of_a_prime() {
+   assert_eq!(factors(8), vec![2, 2, 2]);
+}
+
+#[test]
+//#[ignore]
+fn test_product_of_primes_and_non_primes() {
+   assert_eq!(factors(12), vec![2, 2, 3]);
+}
+
+#[test]
+//#[ignore]
+fn test_product_of_primes() {
+   assert_eq!(factors(901255), vec![5, 17, 23, 461]);
+}
+
+#[test]
+//#[ignore]
+fn test_factors_include_large_prime() {
+   assert_eq!(factors(93819012551), vec![11, 9539, 894119]);
+}
+
+// 15
+#[test]
+fn test_with_zero_length() {
+   let expected = vec!["".to_string(); 6];
+   assert_eq!(series("92017", 0), expected);
+}
+
+#[test]
+//#[ignore]
+fn test_with_length_2() {
+   let expected = vec![
+       "92".to_string(),
+       "20".to_string(),
+       "01".to_string(),
+       "17".to_string(),
+   ];
+   assert_eq!(series("92017", 2), expected);
+}
+
+#[test]
+//#[ignore]
+fn test_with_numbers_length() {
+   let expected = vec!["92017".to_string()];
+   assert_eq!(series("92017", 5), expected);
+}
+
+#[test]
+//#[ignore]
+fn test_too_long() {
+   let expected: Vec<String> = vec![];
+   assert_eq!(series("92017", 6), expected);
+}
+
+// 16
+#[test]
+fn test_single_digit_numbers_are_armstrong_numbers() {
+   assert!(is_armstrong_number(5))
+}
+
+#[test]
+//#[ignore]
+fn test_there_are_no_2_digit_armstrong_numbers() {
+   assert!(!is_armstrong_number(10))
+}
+
+#[test]
+//#[ignore]
+fn test_three_digit_armstrong_number() {
+   assert!(is_armstrong_number(153))
+}
+
+#[test]
+//#[ignore]
+fn test_three_digit_non_armstrong_number() {
+   assert!(!is_armstrong_number(100))
+}
+
+#[test]
+//#[ignore]
+fn test_four_digit_armstrong_number() {
+   assert!(is_armstrong_number(9474))
+}
+
+#[test]
+//#[ignore]
+fn test_four_digit_non_armstrong_number() {
+   assert!(!is_armstrong_number(9475))
+}
+
+#[test]
+//#[ignore]
+fn test_seven_digit_armstrong_number() {
+   assert!(is_armstrong_number(9926315))
+}
+
+#[test]
+//#[ignore]
+fn test_seven_digit_non_armstrong_number() {
+   assert!(!is_armstrong_number(9926316))
+}

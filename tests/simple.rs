@@ -326,3 +326,107 @@ pub fn total() -> u64 {
    (1..65).fold(0, |acc, s| acc + square(s))
 }
 */
+
+/* 13 勾股数
+    请找出 a，b，c，恰好符合勾股定理, 而其中 a+b+c=1000.
+    返回， a * b * c 值.
+*/
+pub fn find() -> Option<u32> {
+    for a in 1..1000 {
+        for b in (a + 1)..(1000 - a) {
+            let c = 1000 - (a + b);
+            if a * a + b * b == c * c {
+                return Some(a * b * c);
+            }
+        }
+    }
+    None
+}
+
+/* 14 素数因子
+    计算给定自然数的素因子
+*/
+pub fn factors(n: u64) -> Vec<u64> {
+    let mut result = vec![];
+    let mut n = n;
+    let mut index = 2;
+    while n != 1 {
+        for i in index.. {
+            if n % i == 0 {
+                n /= i;
+                index = i;
+                result.push(i);
+                break;
+            }
+        }    
+    }
+    result
+ }
+ /*
+ pub fn factors(n: u64) -> Vec<u64> {
+   let mut val = n;
+   let mut out: Vec<u64> = vec![];
+   let mut possible: u64 = 2;
+   while val > 1 {
+       while val % possible == 0 {
+           out.push(possible);
+           val /= possible;
+       }
+       possible += 1;
+   }
+   out
+}
+*/
+
+/* 15 系列
+    给定一串数字,输出所有连续的n长度顺序子串。
+
+    例如,字符串”49142”长度为3的子串系列:
+
+    “491”
+    “914”
+    “142”
+    以下长度为 4 的 系列:
+
+    “4914”
+    “9142”
+    如果你要求一个 5 位数字，长度为 6 的系列,你应该得到原数字。
+*/
+pub fn series(digits: &str, len: usize) -> Vec<String> {
+    let mut out: Vec<String> = vec![];
+    if digits.len() < len {
+        return out;
+    }
+    for i in 0..(digits.len()-len+1) {
+        out.push(digits.get(i..(i+len)).unwrap().to_string());
+    }
+    out
+} 
+/*
+pub fn series(digits: &str, len: usize) -> Vec<String> {
+    match len {
+        0 => vec!["".to_string(); digits.len() + 1],
+        _ => digits
+            .chars()
+            .collect::<Vec<char>>()
+            .windows(len)
+            .map(|window| window.into_iter().collect::<String>())
+            .collect::<Vec<String>>(),
+    }
+ }
+*/
+
+/* 16 水仙花数
+    一个数字,它是自身每个单数字与数字量的幂，之和
+    153 是水仙花数,因为:153 = 1^3 + 5^3 + 3^3 = 1 + 125 + 27 = 153
+    154 不是一个水仙花数,因为:154 != 1^3 + 5^3 + 4^3 = 1 + 125 + 64 = 190
+*/
+pub fn is_armstrong_number(num: u32) -> bool {
+    // let out: Vec<u32> = num.to_string().chars().map(|c| c.to_digit(10).unwrap()).collect::<Vec<u32>>();
+    let out = num.to_string();
+    let len = out.len() as u32;
+    // out.into_iter().fold(0, |accum, x| accum + x.pow(len)) == num
+    out.chars()
+        .map(|c| c.to_digit(10).unwrap().pow(len))
+        .sum::<u32>() == num
+}
