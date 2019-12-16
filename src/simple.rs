@@ -430,3 +430,85 @@ pub fn is_armstrong_number(num: u32) -> bool {
         .map(|c| c.to_digit(10).unwrap().pow(len))
         .sum::<u32>() == num
 }
+
+/* 17 考拉兹猜想
+    是指对于每一个正整数，如果它是奇数，则对它乘 3 再加 1，如果它是偶数，则对它除以 2，如此循环，最终都能够得到 1。
+
+    给予一个数字n，那它到达 1 的步骤
+*/
+pub fn collatz(n: u64) -> Option<u64> {
+    if n == 0 {
+        return None;
+    }
+    let mut n = n;
+    let mut step: u64 = 0;
+    while n != 1 {
+        if n % 2 == 0 {
+            n /= 2
+        } else {
+            n = n * 3 + 1
+        }
+        step += 1;
+    }
+    Some(step)
+}
+/*
+pub fn collatz_positive(n: u64) -> u64 {
+   if n == 1 {
+       0
+   } else {
+       1 + match n % 2 {
+           0 => collatz_positive(n / 2),
+           _ => collatz_positive(n * 3 + 1),
+       }
+   }
+}
+
+// return Ok(x) where x is the number of steps required to reach 1
+pub fn collatz(n: u64) -> Option<u64> {
+   if n < 1 {
+       None
+   } else {
+       Some(collatz_positive(n))
+   }
+}
+*/
+
+// 18 迪菲-赫尔曼
+use rand::{thread_rng, Rng};
+
+
+/// Right-to-left modular exponentiation implementation
+/// For more information see https://en.wikipedia.org/wiki/Modular_exponentiation
+fn modular_exponentiation(base: u64, exponent: u64, modulus: u64) -> u64 {
+   let mut result = 1;
+
+   let mut e = exponent;
+
+   let mut b = base;
+
+   while e > 0 {
+       if (e & 1) == 1 {
+           result = (result * b) % modulus;
+       }
+
+       e >>= 1;
+
+       b = (b * b) % modulus;
+   }
+
+   result
+}
+
+pub fn private_key(p: u64) -> u64 {
+   let mut rng = thread_rng();
+   rng.gen_range(2, p)
+}
+
+pub fn public_key(p: u64, g: u64, a: u64) -> u64 {
+   modular_exponentiation(g, a, p)
+}
+
+pub fn secret(p: u64, b_pub: u64, a: u64) -> u64 {
+   modular_exponentiation(b_pub, a, p)
+}
