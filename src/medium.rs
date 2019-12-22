@@ -74,8 +74,8 @@ pub fn check(word: &str) -> bool {
 // 3 说
 // 提供一个 0 到 999,999,999,999 之间的数字,用英语拼出这个数字
 pub fn encode(n: u64) -> String {
-    let bit = |x| {
-        match x % 10 {
+    let digit_to_string = |x| {
+        match x {
             0 => "",
             1 => "one",
             2 => "two",
@@ -88,51 +88,76 @@ pub fn encode(n: u64) -> String {
             9 => "nine",
         }
     };
-    let out = match n / 10 {
-        0 => bit(n),
-        1 => match n % 10 {
-            0 => "ten",
-            1 => "eleven",
-            2 => "twelve",
-            3 => "thirteen",
-            4 => "fourteen",
-            5 => "fifteen",
-            6 => "sixteen",
-            7 => "seventeen",
-            8 => "eighteen",
-            9 => "nineteen",
-        },
-        2 => match n % 10 {
-            0 => "twenty",
-            _ => &format!("twenty-{}", bit(n))
-        },
-        3 => match n % 10 {
-            0 => "thirty",
-            _ => &format!("twenty-{}", bit(n))
-        },
-        4 => match n % 10 {
-            0 => "fourty",
-            _ => &format!("fourty-{}", bit(n))
-        },
-        5 => match n % 10 {
-            0 => "fifty",
-            _ => &format!("fifty-{}", bit(n))
-        },
-        6 => match n % 10 {
-            0 => "sixty",
-            _ => &format!("sixty-{}", bit(n))
-        },
-        7 => match n % 10 {
-            0 => "seventy",
-            _ => &format!("seventy-{}", bit(n))
-        },
-        8 => match n % 10 {
-            0 => "eighty",
-            _ => &format!("eighty-{}", bit(n))
-        },
-        9 => match n % 10 {
-            0 => "ninety",
-            _ => &format!("ninety-{}", bit(n))
-        },
+    let bit = |x| digit_to_string(x % 10);
+    let ten_bit = |n| {
+        match n / 10 {
+            0 => bit(n),
+            1 => match n % 10 {
+                0 => "ten",
+                1 => "eleven",
+                2 => "twelve",
+                3 => "thirteen",
+                4 => "fourteen",
+                5 => "fifteen",
+                6 => "sixteen",
+                7 => "seventeen",
+                8 => "eighteen",
+                9 => "nineteen",
+            },
+            2 => match n % 10 {
+                0 => "twenty",
+                _ => &format!("twenty-{}", bit(n)),
+            },
+            3 => match n % 10 {
+                0 => "thirty",
+                _ => &format!("thirty-{}", bit(n)),
+            },
+            4 => match n % 10 {
+                0 => "fourty",
+                _ => &format!("fourty-{}", bit(n)),
+            },
+            5 => match n % 10 {
+                0 => "fifty",
+                _ => &format!("fifty-{}", bit(n)),
+            },
+            6 => match n % 10 {
+                0 => "sixty",
+                _ => &format!("sixty-{}", bit(n)),
+            },
+            7 => match n % 10 {
+                0 => "seventy",
+                _ => &format!("seventy-{}", bit(n)),
+            },
+            8 => match n % 10 {
+                0 => "eighty",
+                _ => &format!("eighty-{}", bit(n)),
+            },
+            9 => match n % 10 {
+                0 => "ninety",
+                _ => &format!("ninety-{}", bit(n)),
+            },
+        }
     };
+    let hundred_bit = |x| {
+        match x {
+            0 => "",
+            _ => &format!("{} hundred", digit_to_string(x)),
+        }
+    };
+    let n_list: Vec<u64> = vec![];
+    while n / 1000 != 0 {
+        n_list.push(n % 1000);
+        n = n / 1000;
+    };
+    let n_string_list: Vec<&str> = vec![];
+    for x in n_list.into_iter() {
+        n_string_list.push(&format!("{} {}", hundred_bit(x / 100), ten_bit(x % 100)));
+    };
+    let unit_list = vec!["", "thousand", "million", "billion"];
+    let n_string_unit_list: Vec<&str> = vec![];
+    for i in 0..n_string_list.len() {
+        n_string_unit_list.push(&format!("{} {}", n_string_list[i], unit_list[i]));
+    };
+    let out = n_string_unit_list.join(" ");
+    format!("{}", n_string_unit_list.join(" "))
 }
