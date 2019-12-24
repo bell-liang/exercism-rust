@@ -256,3 +256,120 @@ pub fn encode(n: u64) -> String {
    }
 }
 */
+
+/* 3 运行游程编码
+实现编码和解码.
+游程编码(RLE)是一种简单的数据压缩形式，其中运行的(连续数据元素)仅由一个数据值和计数代替。
+例如,我们可以只用 13 字节，就可以 代表原始的 53 个字符.
+"WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWB"  ->  "12WB12W3B24WB"
+RLE 允许从压缩数据中，完美地重建原始数据,这使其成为无损数据压缩.
+"AABCCCDEEEE"  ->  "2AB3CD4E"  ->  "AABCCCDEEEE"
+为简单起见,您可以假设未编码的字符串，仅包含字母 A 到 Z(小写或大写)和空格。这样,要编码的数据将永远 不包含 任何数字,并且要解码的数据内的数字始终表示后续字符的计数
+*/
+pub fn encode_3(source: &str) -> String {
+    if source == "" {
+        return "".to_string();
+    }
+    let source = source.chars().collect::<Vec<char>>();
+    let mut out = String::from("");
+    let mut len = 0;
+    let mut c = source[0];
+    for i in source.iter() {
+        if *i == c {
+            len += 1;
+        } else {
+            if len > 1 {
+                out.push_str(&len.to_string());
+            }
+            out.push(c);
+            c = *i;
+            len = 1;
+        }
+    }
+    if len > 1 {
+        out.push_str(&len.to_string());
+    }
+    out.push(c);
+    out.to_string()
+}
+pub fn decode(source: &str) -> String {
+    let source= source.chars().collect::<Vec<char>>();
+    let mut num_list: Vec<u32> = vec![];
+    let mut char_list: Vec<char> = vec![];
+    let mut num: u32 = 1;
+    let mut flag = false;
+    for i in 0..(source.len()) {
+        if source[i].is_ascii_digit() {
+            if flag {
+                num = num * 10 + source[i].to_digit(10).unwrap();
+            } else {
+                num = source[i].to_digit(10).unwrap();
+            }
+            flag = true;
+        } else {
+            flag = false;
+            num_list.push(num);
+            num = 1;
+            char_list.push(source[i]);
+        }
+    }
+    let mut out = String::from("");
+    for i in 0..(num_list.len()) {
+        for _ in 0..(num_list[i]) {
+            out.push(char_list[i]);
+        }
+    }
+    out.to_string()
+}
+/*
+use std::cmp;
+
+pub fn encode(input: &str) -> String {
+   input
+       .chars()
+       .fold(
+           (String::new(), ' ', 0, 1),
+           |(mut acc, last, last_n, pos), c| {
+               // acc = where answer is accumulated
+               // last = last character read
+               // last_n = accum count for last
+               if c == last {
+                   if pos == input.len() {
+                       // end of string
+                       acc += (last_n + 1).to_string().as_str();
+                       acc.push(c);
+                   }
+                   (acc, last, last_n + 1, pos + 1)
+               } else {
+                   if last_n > 1 {
+                       acc += last_n.to_string().as_str();
+                   }
+                   if last_n > 0 {
+                       // ignore initial last (single whitespace)
+                       acc.push(last);
+                   }
+                   if pos == input.len() {
+                       // end of string
+                       acc.push(c);
+                   }
+                   (acc, c, 1, pos + 1)
+               }
+           },
+       )
+       .0
+}
+
+pub fn decode(input: &str) -> String {
+   input
+       .chars()
+       .fold((String::new(), 0), |(mut acc, last_n), c| {
+           if let Some(d) = c.to_digit(10) {
+               (acc, 10 * last_n + d)
+           } else {
+               acc += c.to_string().repeat(cmp::max(last_n, 1) as usize).as_str();
+               (acc, 0)
+           }
+       })
+       .0
+}
+*/
