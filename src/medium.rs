@@ -257,7 +257,7 @@ pub fn encode(n: u64) -> String {
 }
 */
 
-/* 3 运行游程编码
+/* 4 运行游程编码
 实现编码和解码.
 游程编码(RLE)是一种简单的数据压缩形式，其中运行的(连续数据元素)仅由一个数据值和计数代替。
 例如,我们可以只用 13 字节，就可以 代表原始的 53 个字符.
@@ -371,5 +371,86 @@ pub fn decode(input: &str) -> String {
            }
        })
        .0
+}
+*/
+
+/* 5 ISBN 检测器
+ISBN-10 格式是 9 位数字(0 到 9)加上一个校验字符(一个数字或一个 X)。在校验字符为 X 的情况下,这表示值”10”。这些可以与连字符(不管有没有)通信,并且可以通过以下公式检查它们的有效性:
+(x1 * 10 + x2 * 9 + x3 * 8 + x4 * 7 + x5 * 6 + x6 * 5 + x7 * 4 + x8 * 3 + x9 * 2 + x10 * 1) mod 11 == 0
+如果结果是 0,那么它是一个有效的 ISBN-10,否则它是无效的.
+
+给定一个字符串,程序应该检查所提供的字符串是否是有效的 ISBN-10。为了实现这一点，需要在计算 ISBN 的校验位数之前，考虑字符串的预处理/解析.
+
+该程序应该能够验证 ISBN-10 的破折号(不管有没有).
+*/
+pub fn is_valid_isbn(isbn: &str) -> bool {
+    let out = isbn.chars().filter(|c| *c != '-').collect::<Vec<char>>();
+    let mut sum = 0;
+    let len = out.len();
+    for i in 0..(len-1) {
+        if out[i].is_ascii_digit() {
+            sum += out[i].to_digit(10).unwrap() * (10 - i as u32);
+        } else {
+            return false;
+        }
+    }
+    let last_char = out[len-1];
+    if !last_char.is_ascii_digit() && last_char != 'X' {
+        return false;
+    }
+    if last_char == 'X' {
+        sum += 10;
+    } else {
+        sum += last_char.to_digit(10).unwrap();
+    }
+    if sum % 11 == 0 {
+        true
+    } else {
+        false
+    }
+}
+/*
+/// An ISBN type
+#[derive(PartialEq, Eq)]
+enum IsbnType {
+   Isbn10,
+   Isbn13,
+}
+
+/// Checks if an 'X' is valid at the given position for the given ISBN type
+#[allow(non_snake_case)]
+fn is_X_valid(position: &usize, isbn_type: &IsbnType) -> bool {
+   (isbn_type == &IsbnType::Isbn10 && position == &9)
+       || (isbn_type == &IsbnType::Isbn13 && position == &12)
+}
+
+/// Checks if a '-' is valid at the given position for the given ISBN type
+fn is_dash_valid(position: &usize, isbn_type: &IsbnType) -> bool {
+   isbn_type == &IsbnType::Isbn13 && (position == &1 || position == &5 || position == &11)
+}
+
+/// Determines whether the supplied string is a valid ISBN number
+pub fn is_valid_isbn(isbn: &str) -> bool {
+   let isbn_type = match isbn.len() {
+       10 => IsbnType::Isbn10,
+       13 => IsbnType::Isbn13,
+       _ => return false,
+   };
+
+   let mut checksum = 0;
+   let mut coefficient = 10;
+   for (position, c) in isbn.char_indices() {
+       let digit_value = match c {
+           '0'...'9' => c.to_digit(10).unwrap(),
+           'X' if is_X_valid(&position, &isbn_type) => 10,
+           '-' if is_dash_valid(&position, &isbn_type) => continue,
+           _ => return false,
+       };
+
+       checksum += coefficient * digit_value;
+       coefficient -= 1;
+   }
+
+   checksum % 11 == 0
 }
 */
