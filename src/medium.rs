@@ -454,3 +454,71 @@ pub fn is_valid_isbn(isbn: &str) -> bool {
    checksum % 11 == 0
 }
 */
+
+/* 6 完全数
+根据 Nicomachus’(60-120CE)的自然数分类方案，确定一个数是- Perfect(完全), Abundant(过剩数), Deficient(亏数)
+
+希腊数学家Nicomachus设计了一种自然数的分类方案,将每一个数识别归类为 perfect, abundant, or deficient ，方案基于aliquot sum（等值和）。 等值和定义为不包括数字本身的约数(可除出整数)的总和。例如,15 的等值和是(1+3+5)=9.
+
+Perfect(完全): aliquot sum = number
+6 ，因为 (1 + 2 + 3) = 6
+28 ，因为 (1 + 2 + 4 + 7 + 14) = 28
+Abundant(过剩数): aliquot sum > number
+12 , 因为 (1 + 2 + 3 + 4 + 6) = 16
+24 , 因为 (1 + 2 + 3 + 4 + 6 + 8 + 12) = 36
+Deficient(亏数): aliquot sum < number
+8 ， 因为 (1 + 2 + 4) = 7
+素数 都是 deficient
+实现一种方法来确定给定的数字是否为Perfect。 根据您的语言轨迹,您还可能需要实现一种方法来确定给定的数字是否为Abundant或Deficient.
+
+资源
+*/
+#[derive(Debug, PartialEq, Eq)]
+pub enum Classification {
+   Abundant,
+   Perfect,
+   Deficient,
+}
+
+pub fn classify(num: u64) -> Option<Classification> {
+    if num == 0 {
+        return None;
+    }
+    let len = num / 2 + 1;
+    let sum = (1..len).fold(0, |accm, i| {
+        if num % i == 0 {
+            accm + i
+        } else {
+            accm
+        }
+    });
+    if sum == num {
+        Some(Classification::Perfect)
+    } else if sum > num {
+        Some(Classification::Abundant)
+    } else {
+        Some(Classification::Deficient)
+    }
+}
+/*
+pub fn classify(num: u64) -> Option<Classification> {
+   if num == 0 {
+       return None;
+   }
+   let sum: u64 = (1..num).filter(|i| num % i == 0).sum();
+   if sum == num {
+       Some(Classification::Perfect)
+   } else if sum < num {
+       Some(Classification::Deficient)
+   } else {
+       Some(Classification::Abundant)
+   }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Classification {
+   Abundant,
+   Perfect,
+   Deficient,
+}
+*/
