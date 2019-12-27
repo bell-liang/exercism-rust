@@ -522,3 +522,100 @@ pub enum Classification {
    Deficient,
 }
 */
+
+/* 7 时钟
+实现一个处理没有日期的时间的 clock.
+
+您应该可以添加和减去,分钟数.
+
+代表相同时间的两个时钟应该彼此相等.
+*/
+#[derive(Debug, PartialEq, Eq)]
+pub struct Clock {
+    hours: i32,
+    minutes: i32,
+}
+
+impl Clock {
+    pub fn new(hours: i32, minutes: i32) -> Self {
+        Clock {
+            hours: Clock::caculate_hours(hours, minutes),
+            minutes: Clock::caculate_minutes(minutes),
+        }
+    }
+
+    pub fn add_minutes(self, minutes: i32) -> Self {
+        let tmp_minutes = self.minutes + minutes;
+        Clock {
+            hours: Clock::caculate_hours(self.hours, tmp_minutes),
+            minutes: Clock::caculate_minutes(tmp_minutes),
+        }
+    }
+
+    fn caculate_hours(hours: i32, minutes: i32) -> i32 {
+        let temp_hours = (hours + minutes / 60) % 24;
+        let temp_minutes = minutes % 60;
+        if temp_hours <= 0 {
+            if temp_minutes < 0 {
+                24 + temp_hours - 1
+            } else {
+                (24 + temp_hours) % 24
+            }
+        } else if temp_minutes < 0{
+            temp_hours - 1
+        } else {
+            temp_hours
+        }
+    }
+
+    fn caculate_minutes(minutes: i32) -> i32 {
+        let temp_minutes = minutes % 60;
+        if temp_minutes < 0 {
+            60 + temp_minutes
+        } else {
+            temp_minutes
+        }
+    }
+}
+
+impl std::fmt::Display for Clock {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:02}:{:02}", self.hours, self.minutes)
+    }
+}
+/*
+use std::fmt;
+
+#[derive(Eq, PartialEq, Debug)]
+pub struct Clock {
+   minutes: i32,
+}
+
+impl fmt::Display for Clock {
+   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+       let hours = self.minutes / 60;
+       let mins = self.minutes % 60;
+       write!(f, "{:02}:{:02}", hours, mins)
+   }
+}
+
+impl Clock {
+   pub fn new(hour: i32, minute: i32) -> Self {
+       Clock::build(hour * 60 + minute)
+   }
+
+   fn build(minutes: i32) -> Self {
+       let mut mins = minutes;
+       while mins < 0 {
+           mins += 1440;
+       }
+       Clock {
+           minutes: mins % 1440,
+       }
+   }
+
+   pub fn add_minutes(&mut self, minutes: i32) -> Self {
+       Clock::build(self.minutes + minutes)
+   }
+}
+*/
