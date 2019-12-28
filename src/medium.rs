@@ -619,3 +619,123 @@ impl Clock {
    }
 }
 */
+
+/* 8 DOT DSL
+
+编写类似于 Graphviz 点语言的特定领域语言.
+
+一个Domain Specific Language (DSL)是针对特定域优化的小语言.
+
+比如说DOT 语言允许您编写图形的文本描述，然后通过Graphviz中其中一个图形工具(如dot)转换为图像，一个简单的图形如下所示:
+
+
+    graph {
+        graph [bgcolor="yellow"]
+        a [color="red"]
+        b [color="blue"]
+        a -- b [color="green"]
+    }
+把它放在一个example.dot文件中，并运行dot example.dot -T png -o example.png，就会创建一个图像example.png，其中黄色背景上的绿线连接的红色和蓝色圆圈。
+
+创建类似于点语言的 DSL.
+
+本练习希望您通过使用builder pattern模式，构建多个结构。简而言之,此模式允许您将包含大量参数的结构的构造函数，拆分为多个单独的函数。这种方法为您提供了实现紧凑，但高度灵活的结构构造和配置的方法
+*/
+pub mod graph {
+    use crate::medium::graph::graph_items::node::Node;
+    use crate::medium::graph::graph_items::edge::Edge;
+    use std::collections::HashMap;
+
+    #[derive(Debug)]
+    pub struct Graph {
+        pub nodes: Vec<Node>,
+        pub edges: Vec<Edge>,
+        pub attrs: HashMap<String, String>,
+    }
+    impl Graph {
+        pub fn new() -> Self {
+            Graph {
+                nodes: vec![],
+                edges: vec![],
+                attrs: HashMap::new(),
+            }
+        }
+        pub fn with_nodes(mut self, nodes: &[Node]) -> Self {
+            self.nodes = nodes.clone().to_vec();
+
+            self
+        }
+        pub fn with_edges(mut self, edges: &[Edge]) -> Self {
+            self.edges = edges.clone().to_vec();
+
+            self
+        }
+        pub fn with_attrs(mut self, attrs: &[(&'static str, &'static str)]) -> Self {
+            attrs.iter().for_each(|&(name, value)| {
+                self.attrs.insert(name.to_string(), value.to_string());
+            });
+
+            self
+        }
+        pub fn get_node(&self, name: &str) -> Option<&Node> {
+            self.nodes.iter().filter(|n| n.name == name).nth(0)
+        }
+    }
+
+    pub mod graph_items {
+        pub mod edge {
+            use std::collections::HashMap;
+
+            #[derive(Clone, PartialEq, Debug)]
+            pub struct Edge {
+                src: String,
+                dst: String,
+                attrs: HashMap<String, String>,
+            }
+            impl Edge {
+                pub fn new(src: &str, dst: &str) -> Self {
+                    Edge {
+                        src: src.to_string(),
+                        dst: dst.to_string(),
+                        attrs: HashMap::new(),
+                    }
+                }
+                pub fn with_attrs(mut self, attrs: &[(&'static str, &'static str)]) -> Self {
+                    attrs.iter().for_each(|&(name, value)| {
+                        self.attrs.insert(name.to_string(), value.to_string());
+                    });
+
+                    self
+                }
+            }
+        }
+
+        pub mod node {
+            use std::collections::HashMap;
+
+            #[derive(Clone, PartialEq, Debug)]
+            pub struct Node {
+                pub name: String,
+                attrs: HashMap<String, String>,
+            }
+            impl Node {
+                pub fn new(name: &str) -> Self {
+                    Node {
+                        name: name.to_string(),
+                        attrs: HashMap::new(),
+                    }
+                }
+                pub fn with_attrs(mut self, attrs: &[(&'static str, &'static str)]) -> Self {
+                    attrs.iter().for_each(|&(name, value)| {
+                        self.attrs.insert(name.to_string(), value.to_string());
+                    });
+
+                    self
+                }
+                pub fn get_attr(&self, name: &str) -> Option<&str> {
+                    self.attrs.get(name).map(|v| v.as_ref())
+                }
+            }
+        }
+    }
+}
