@@ -739,3 +739,37 @@ pub mod graph {
         }
     }
 }
+/* 9 汉明窗
+给 2 个长度为 n 的 DNA 序列，求汉明距离差异为多少。
+
+通过比较两条 DNA 链,并计算其中有多少核苷酸与其他序列中的同等核苷酸不同.
+
+
+GAGCCTACTAACGGGAT
+CATCGTAATGACGGCCT
+^ ^ ^ ^ ^ ^^
+这两条 DNA 链之间的 汉明距离为 7.
+*/
+pub fn hamming_distance(s1: &str, s2: &str) -> Option<usize> {
+    if s1.len() != s2.len() {
+        return None;
+    }
+    let s1 = s1.chars().collect::<Vec<char>>();
+    let s2 = s2.chars().collect::<Vec<char>>();
+    let mut len = 0;
+    for i in 0..(s1.len()) {
+        if s1[i] != s2[i] {
+            len += 1;
+        }
+    }
+    Some(len)
+}
+/*
+pub fn hamming_distance(a: &str, b: &str) -> Option<usize> {
+   if a.len() != b.len() {
+       return None;
+   }
+
+   Some(a.chars().zip(b.chars()).filter(|&(a, b)| a != b).count())
+}
+*/

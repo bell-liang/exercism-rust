@@ -422,10 +422,8 @@ pub fn series(digits: &str, len: usize) -> Vec<String> {
     154 不是一个水仙花数,因为:154 != 1^3 + 5^3 + 4^3 = 1 + 125 + 64 = 190
 */
 pub fn is_armstrong_number(num: u32) -> bool {
-    // let out: Vec<u32> = num.to_string().chars().map(|c| c.to_digit(10).unwrap()).collect::<Vec<u32>>();
     let out = num.to_string();
     let len = out.len() as u32;
-    // out.into_iter().fold(0, |accum, x| accum + x.pow(len)) == num
     out.chars()
         .map(|c| c.to_digit(10).unwrap().pow(len))
         .sum::<u32>() == num
