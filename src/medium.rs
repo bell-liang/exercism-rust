@@ -773,3 +773,88 @@ pub fn hamming_distance(a: &str, b: &str) -> Option<usize> {
    Some(a.chars().zip(b.chars()).filter(|&(a, b)| a != b).count())
 }
 */
+
+/* 10 简单链表
+编写一个使用元素(Elements)和列表(List)的简单链表实现.
+
+链表是计算机科学中的一种基本数据结构，常用于其他数据结构的实现。它们在函数式编程语言(如 Clojure、Erlang 或 Haskell)中很普遍，但是在命令式语言(如 Ruby 或 Python)中很少见。
+
+最简单的链表是单链表。列表中的每个元素，包含数据和一个”next”字段，指向元素列表中的下一个元素。
+
+链接列表的这种变体通常用于表示序列，或推/取堆栈(也称为 LIFO 堆栈;后进先出)。
+
+作为第一步,让我们创建一个包含范围(1..10)的单一链接列表,并提供反转链接列表，和转换为数组，或从数组转换的函数.
+
+在使用内置链表的语言实现这一点时,实现自己的抽象数据类型.
+*/
+pub struct SimpleLinkedList<T> {
+    head: Option<Box<Node<T>>>,
+    len: usize,
+}
+
+struct Node<T> {
+    data: T,
+    next: Option<Box<Node<T>>>,
+}
+
+impl<T> SimpleLinkedList<T> {
+    pub fn new() -> Self {
+        SimpleLinkedList {
+            head: None,
+            len: 0,
+        }
+    }
+    pub fn len(&self) -> usize {
+        self.len
+    }
+    pub fn push(&mut self, _element: T) {
+        let node = Box::new(Node { data: _element, next: self.head.take()});
+        self.head = Some(node);
+        self.len += 1;
+    }
+    pub fn pop(&mut self) -> Option<T> {
+        match self.len {
+            0 => None,
+            _ => self.head.take().map(|node| {
+                let node = *node;
+                self.head = node.next;
+                node.data
+            })
+        }
+    }
+    pub fn peek(&self) -> Option<&T> {
+        self.head.as_ref().map(|node| &node.data)
+    }
+}
+
+impl<T: Clone> SimpleLinkedList<T> {
+    pub fn rev(&self) -> SimpleLinkedList<T> {
+        let mut rev_list = SimpleLinkedList::new();
+        let mut next = self.head.as_ref().map(|node| &**node);
+        while let Some(node) = next {
+            rev_list.push(node.data.clone());
+            next = node.next.as_ref().map(|node| &**node);
+        }
+        rev_list
+    }
+}
+
+impl<'a, T: Clone> From<&'a [T]> for SimpleLinkedList<T> {
+    fn from(_item: &[T]) -> Self {
+        let mut list = SimpleLinkedList::new();
+        for i in _item.iter() {
+            list.push(i.clone());
+        }
+        list
+    }
+}
+
+impl<T> Into<Vec<T>> for SimpleLinkedList<T> {
+    fn into(mut self) -> Vec<T> {
+        let mut vec = vec![];
+        while self.len() > 0 {
+            vec.push(self.pop().unwrap())
+        }
+        vec
+    }
+}
