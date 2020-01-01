@@ -818,6 +818,7 @@ impl<T> SimpleLinkedList<T> {
             _ => self.head.take().map(|node| {
                 let node = *node;
                 self.head = node.next;
+                self.len -= 1;
                 node.data
             })
         }
@@ -852,9 +853,46 @@ impl<'a, T: Clone> From<&'a [T]> for SimpleLinkedList<T> {
 impl<T> Into<Vec<T>> for SimpleLinkedList<T> {
     fn into(mut self) -> Vec<T> {
         let mut vec = vec![];
-        while self.len() > 0 {
-            vec.push(self.pop().unwrap())
+        while let Some(data) = self.pop(){
+            vec.push(data)
         }
+        vec.reverse();
         vec
+    }
+}
+
+/* 11 杨辉三角形
+计算给定的行数的 杨辉三角形。
+
+在 杨辉 三角形中, 可以看到，一个数由它头顶左右两个数相加得到的。
+    1
+   1 1
+  1 2 1
+ 1 3 3 1
+1 4 6 4 1
+# ... etc
+*/
+pub struct PascalsTriangle {
+    row: u32,
+}
+impl PascalsTriangle {
+    pub fn new(row_count: u32) -> Self {
+        PascalsTriangle {
+            row: row_count,
+        }
+    }
+    pub fn rows(&self) -> Vec<Vec<u32>> {
+        let len = self.row;
+        match len {
+            0 => vec![],
+            1 => vec![vec![1]],
+            2 => vec![vec![1], vec![1, 1]],
+            _ => {
+                let mut out = vec![vec![1], vec![1, 1]];
+                
+                out
+            }
+
+        }
     }
 }
