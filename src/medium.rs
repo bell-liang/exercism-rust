@@ -882,17 +882,163 @@ impl PascalsTriangle {
         }
     }
     pub fn rows(&self) -> Vec<Vec<u32>> {
-        let len = self.row;
-        match len {
+        match self.row {
             0 => vec![],
             1 => vec![vec![1]],
             2 => vec![vec![1], vec![1, 1]],
             _ => {
                 let mut out = vec![vec![1], vec![1, 1]];
-                
+                for _ in 1..(self.row-1) {
+                    let mut temp = vec![1];
+                    let last = out.last().unwrap();
+                    for j in 0..(last.len()-1) {
+                        temp.push(last[j] + last[j+1]);
+                    }
+                    temp.push(1);
+                    out.push(temp);
+                }
                 out
             }
-
         }
     }
+}
+/*
+pub struct PascalsTriangle {
+   row_count: u32,
+}
+
+impl PascalsTriangle {
+   pub fn new(row_count: u32) -> Self {
+       PascalsTriangle {
+           row_count: row_count,
+       }
+   }
+
+   pub fn rows(&self) -> Vec<Vec<u32>> {
+       (0..self.row_count)
+           .map(|row| PascalsTriangle::row(row))
+           .collect()
+   }
+
+   pub fn row(number: u32) -> Vec<u32> {
+       let mut r = vec![1];
+
+       for p in 1..(number + 1) {
+           if let Some(&last) = r.last() {
+               r.push((last * (number + 1 - p)) / p)
+           }
+       }
+       r
+   }
+}
+*/
+
+/* 12 拼字母的分数
+给出一个单词,计算该单词的字母的分数.
+
+字母价值
+你需要这些:
+
+26个英文字母                           对应有多少分
+A, E, I, O, U, L, N, R, S, T       1
+D, G                               2
+B, C, M, P                         3
+F, H, V, W, Y                      4
+K                                  5
+J, X                               8
+Q, Z                               10
+例子
+“cabbage”的得分值应为 14 分:
+C , 就得 3 分
+A , 就得 1 分,两次
+B , 就得 3 分,两次
+G , 就得 2 分
+E , 就得 1 分
+总计:
+3 + 2*1 + 2*3 + 2 + 1
+= 3 + 2 + 6 + 3
+= 5 + 9
+= 14
+*/
+pub fn score(word: &str) -> u64 {
+    let char_to_score = |c: char| {
+        match c {
+            'a' | 'e' | 'i' | 'o' | 'u' | 'l' |  'n' | 'r' | 's' | 't' => 1,
+            'd' | 'g' => 2,
+            'b' | 'c' | 'm' | 'p' => 3,
+            'f' | 'h' | 'v' | 'w' | 'y' => 4,
+            'k' => 5,
+            'j' | 'x' => 8,
+            'q' | 'z' => 10,
+            _ => 0,
+        }
+    };
+    word.to_lowercase().chars().map(|c| char_to_score(c)).sum()
+}
+/*
+use std::collections::HashMap;
+
+pub fn score(word: &str) -> u16 {
+   let values = dictionary();
+   word.to_lowercase()
+       .chars()
+       .map(|c| values.get(&c).clone())
+       .fold(0, |score, v| score + v.unwrap_or(&0))
+}
+
+fn dictionary() -> HashMap<char, u16> {
+   let mut values = HashMap::new();
+   values.insert('a', 1);
+   values.insert('b', 3);
+   values.insert('c', 3);
+   values.insert('d', 2);
+   values.insert('e', 1);
+   values.insert('f', 4);
+   values.insert('g', 2);
+   values.insert('h', 4);
+   values.insert('i', 1);
+   values.insert('j', 8);
+   values.insert('k', 5);
+   values.insert('l', 1);
+   values.insert('m', 3);
+   values.insert('n', 1);
+   values.insert('o', 1);
+   values.insert('p', 3);
+   values.insert('q', 10);
+   values.insert('r', 1);
+   values.insert('s', 1);
+   values.insert('t', 1);
+   values.insert('u', 1);
+   values.insert('v', 4);
+   values.insert('w', 4);
+   values.insert('x', 8);
+   values.insert('y', 4);
+   values.insert('z', 10);
+   values
+}
+*/
+
+/* 12 全字母句
+判断句子是否是全字母句。全字母句(希腊语:παγρμμα,pan 语法,”每个字母”)是一个使用字母表中每个字母，至少一次的句子。最著名的英语是 全字母句:
+
+The quick brown fox jumps over the lazy dog.
+
+字母表由 ASCII 字母a到z的全部组成，并且不区分大小写。输入不能包含非 ASCII 符号.
+*/
+use std::collections::HashSet;
+pub fn is_pangram(sentence: &str) -> bool {
+    let mut char_hash_set = HashSet::new();
+    let mut state = false;
+    sentence.chars().map(|c: char| {
+        if c.is_ascii_alphabetic() {
+            char_hash_set.insert(c);
+        } else {
+            state = true;
+        }
+        if state {
+            return false;
+        };
+        true
+    });
+    char_hash_set.len() == 26
 }
