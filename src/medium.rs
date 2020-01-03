@@ -1018,27 +1018,39 @@ fn dictionary() -> HashMap<char, u16> {
 }
 */
 
-/* 12 全字母句
+/* 13 全字母句
 判断句子是否是全字母句。全字母句(希腊语:παγρμμα,pan 语法,”每个字母”)是一个使用字母表中每个字母，至少一次的句子。最著名的英语是 全字母句:
 
 The quick brown fox jumps over the lazy dog.
 
 字母表由 ASCII 字母a到z的全部组成，并且不区分大小写。输入不能包含非 ASCII 符号.
 */
+
 use std::collections::HashSet;
 pub fn is_pangram(sentence: &str) -> bool {
-    let mut char_hash_set = HashSet::new();
-    let mut state = false;
-    sentence.chars().map(|c: char| {
-        if c.is_ascii_alphabetic() {
-            char_hash_set.insert(c);
-        } else {
-            state = true;
-        }
-        if state {
-            return false;
-        };
-        true
-    });
-    char_hash_set.len() == 26
+    sentence.to_lowercase()
+        .chars()
+        .filter(|c| c.is_ascii_alphabetic())
+        .collect::<HashSet<char>>()
+        .len() == 26
 }
+/*
+use std::collections::BTreeSet;
+use std::iter::FromIterator;
+
+pub fn is_pangram(sentence: &str) -> bool {
+   sentence
+       .to_lowercase()
+       .chars()
+       .filter(|c| c.is_alphabetic())
+       .filter(|c| c.is_ascii())
+       .collect::<BTreeSet<char>>() == english_letter_set()
+}
+
+fn english_letter_set() -> BTreeSet<char> {
+   BTreeSet::from_iter(ENGLISH_ALPHABET.chars())
+}
+
+const ENGLISH_ALPHABET: &'static str = "abcdefghijklmnopqrstuvwxyz";
+*/
+
