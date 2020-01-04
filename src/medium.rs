@@ -1054,3 +1054,78 @@ fn english_letter_set() -> BTreeSet<char> {
 const ENGLISH_ALPHABET: &'static str = "abcdefghijklmnopqrstuvwxyz";
 */
 
+/* 15 核苷酸计数
+给定一条单 DNA 链 ,计算每个核苷酸在字符串中出现的次数.
+
+地球上每一生物的遗传语言都是 DNA.DNA 是一种大分子,它是由一系列叫做核苷酸的单个元素组成。DNA 中存在 4 种类型,它们仅略有不同,并且可用以下符号表示:’A’表示腺嘌呤,’C’表示胞嘧啶,’G’表示鸟嘌呤,’T’表示胸腺嘧啶.
+*/
+use std::collections::HashMap;
+
+pub fn count(nucleotide: char, dna: &str) -> Result<usize, char> {
+    if nucleotide != 'A' && nucleotide != 'G' && nucleotide != 'C' && nucleotide != 'T' {
+        return Err(nucleotide);
+    }
+    let mut num = 0;
+    for c in dna.chars() {
+        if c != 'A' && c != 'G' && c != 'C' && c != 'T' {
+            return Err(c);
+        }
+        if c == nucleotide {
+            num += 1;
+        }
+    }
+    Ok(num)
+}
+
+pub fn nucleotide_counts(dna: &str) -> Result<HashMap<char, usize>, char> {
+    let mut dna_hashmap = HashMap::new();
+    dna_hashmap.insert('A', 0);
+    dna_hashmap.insert('T', 0);
+    dna_hashmap.insert('C', 0);
+    dna_hashmap.insert('G', 0);
+    for c in dna.chars() {
+        if c != 'A' && c != 'G' && c != 'C' && c != 'T' {
+            return Err(c);
+        }
+        if let Some(x) = dna_hashmap.get_mut(&c) {
+            *x += 1;
+        }
+    }
+    Ok(dna_hashmap)
+}
+/*
+use std::collections::HashMap;
+
+static VALID_NUCLEOTIDES: &'static str = "ACGT";
+
+fn valid(c: char) -> Result<char, char> {
+   if VALID_NUCLEOTIDES.contains(c) {
+       Ok(c)
+   } else {
+       Err(c)
+   }
+}
+
+pub fn count(nucleotide: char, input: &str) -> Result<usize, char> {
+   valid(nucleotide)?;
+   let mut count = 0;
+   for c in input.chars() {
+       if valid(c)? == nucleotide {
+           count += 1;
+       }
+   }
+   Ok(count)
+}
+
+pub fn nucleotide_counts(input: &str) -> Result<HashMap<char, usize>, char> {
+   let mut map: HashMap<char, usize> = VALID_NUCLEOTIDES.chars().map(|c| (c, 0)).collect();
+   for nucleotide in input.chars() {
+       if let Some(n) = map.get_mut(&nucleotide) {
+           *n += 1;
+       } else {
+           return Err(nucleotide);
+       }
+   }
+   Ok(map)
+}
+*/
