@@ -1384,3 +1384,250 @@ fn check_dna(s: &str, pairs: &[(char, usize)]) {
  fn counts_invalid_nucleotide_results_in_err() {
     assert_eq!(nucleotide_counts("GGXXX"), Err('X'));
  }
+
+ // 16
+ #[test]
+fn single_digit_string_is_invalid() {
+   assert!(!is_valid("1"));
+}
+
+#[test]
+//#[ignore]
+fn single_zero_string_is_invalid() {
+   assert!(!is_valid("0"));
+}
+
+#[test]
+//#[ignore]
+fn simple_valid_sin() {
+   assert!(is_valid(" 5 9 "));
+}
+
+#[test]
+//#[ignore]
+fn valid_canadian_sin_is_valid() {
+   assert!(is_valid("046 454 286"));
+}
+
+#[test]
+//#[ignore]
+fn invalid_canadian_sin_is_invalid() {
+   assert!(!is_valid("046 454 287"));
+}
+
+#[test]
+//#[ignore]
+fn invalid_credit_card_is_invalid() {
+   assert!(!is_valid("8273 1232 7352 0569"));
+}
+
+#[test]
+//#[ignore]
+fn strings_that_contain_non_digits_are_invalid() {
+   assert!(!is_valid("046a 454 286"));
+}
+
+#[test]
+//#[ignore]
+fn punctuation_is_invalid() {
+   assert!(!is_valid("055-444-285"));
+}
+
+#[test]
+//#[ignore]
+fn symbols_are_invalid() {
+   assert!(!is_valid("055£ 444$ 285"));
+}
+
+#[test]
+//#[ignore]
+fn single_digit_with_space_is_invalid() {
+   assert!(!is_valid(" 0"));
+}
+
+#[test]
+//#[ignore]
+fn lots_of_zeros_are_valid() {
+   assert!(is_valid(" 00000"));
+}
+
+#[test]
+//#[ignore]
+fn another_valid_sin() {
+   assert!(is_valid("055 444 285"));
+}
+
+#[test]
+//#[ignore]
+fn nine_doubled_is_nine() {
+   assert!(is_valid("091"));
+}
+
+// 17
+#[test]
+fn return_is_a_result() {
+   assert!(lsp("29", 2).is_ok());
+}
+
+#[test]
+//#[ignore]
+fn find_the_largest_product_when_span_equals_length() {
+   assert_eq!(Ok(18), lsp("29", 2));
+}
+
+#[test]
+//#[ignore]
+fn find_the_largest_product_of_two_with_numbers_in_order() {
+   assert_eq!(Ok(72), lsp("0123456789", 2));
+}
+
+#[test]
+//#[ignore]
+fn find_the_largest_product_of_two_with_numbers_not_in_order() {
+   assert_eq!(Ok(48), lsp("576802143", 2));
+}
+
+#[test]
+//#[ignore]
+fn find_the_largest_product_of_three_with_numbers_in_order() {
+   assert_eq!(Ok(504), lsp("0123456789", 3));
+}
+
+#[test]
+//#[ignore]
+fn find_the_largest_product_of_three_with_numbers_not_in_order() {
+   assert_eq!(Ok(270), lsp("1027839564", 3));
+}
+
+#[test]
+//#[ignore]
+fn find_the_largest_product_of_five_with_numbers_in_order() {
+   assert_eq!(Ok(15120), lsp("0123456789", 5));
+}
+
+#[test]
+//#[ignore]
+fn span_of_six_in_a_large_number() {
+   assert_eq!(
+       Ok(23520),
+       lsp("73167176531330624919225119674426574742355349194934", 6)
+   );
+}
+
+#[test]
+//#[ignore]
+fn returns_zero_if_number_is_zeros() {
+   assert_eq!(Ok(0), lsp("0000", 2));
+}
+
+#[test]
+//#[ignore]
+fn returns_zero_if_all_products_are_zero() {
+   assert_eq!(Ok(0), lsp("99099", 3));
+}
+
+#[test]
+//#[ignore]
+fn a_span_is_longer_than_number_is_an_error() {
+   assert_eq!(Err(Error::SpanTooLong), lsp("123", 4));
+}
+
+// There may be some confusion about whether this should be 1 or error.
+// The reasoning for it being 1 is this:
+// There is one 0-character string contained in the empty string.
+// That's the empty string itself.
+// The empty product is 1 (the identity for multiplication).
+// Therefore LSP('', 0) is 1.
+// It's NOT the case that LSP('', 0) takes max of an empty list.
+// So there is no error.
+// Compare against LSP('123', 4):
+// There are zero 4-character strings in '123'.
+// So LSP('123', 4) really DOES take the max of an empty list.
+// So LSP('123', 4) errors and LSP('', 0) does NOT.
+#[test]
+//#[ignore]
+fn an_empty_string_and_no_span_returns_one() {
+   assert_eq!(Ok(1), lsp("", 0));
+}
+
+#[test]
+//#[ignore]
+fn a_non_empty_string_and_no_span_returns_one() {
+   assert_eq!(Ok(1), lsp("123", 0));
+}
+
+#[test]
+//#[ignore]
+fn empty_string_and_non_zero_span_is_an_error() {
+   assert_eq!(Err(Error::SpanTooLong), lsp("", 1));
+}
+
+#[test]
+//#[ignore]
+fn a_string_with_non_digits_is_an_error() {
+   assert_eq!(Err(Error::InvalidDigit('a')), lsp("1234a5", 2));
+}
+
+// 18
+fn check_word_count(s: &str, pairs: &[(&str, u32)]) {
+    // The reason for the awkward code in here is to ensure that the failure
+    // message for assert_eq! is as informative as possible. A simpler
+    // solution would simply check the length of the map, and then
+    // check for the presence and value of each key in the given pairs vector.
+    let mut m: HashMap<String, u32> = word_count(s);
+    for &(k, v) in pairs.iter() {
+        assert_eq!((k, m.remove(&k.to_string()).unwrap_or(0)), (k, v));
+    }
+    // may fail with a message that clearly shows all extra pairs in the map
+    assert_eq!(m.iter().collect::<Vec<(&String, &u32)>>(), vec![]);
+ }
+ 
+ #[test]
+ fn test_count_one_word() {
+    check_word_count("word", &[("word", 1)]);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_count_one_of_each() {
+    check_word_count("one of each", &[("one", 1), ("of", 1), ("each", 1)]);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_count_multiple_occurrences() {
+    check_word_count(
+        "one fish two fish red fish blue fish",
+        &[("one", 1), ("fish", 4), ("two", 1), ("red", 1), ("blue", 1)],
+    );
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_ignore_punctuation() {
+    check_word_count(
+        "car : carpet as java : javascript!!&@$%^&",
+        &[
+            ("car", 1),
+            ("carpet", 1),
+            ("as", 1),
+            ("java", 1),
+            ("javascript", 1),
+        ],
+    );
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_include_numbers() {
+    check_word_count(
+        "testing, 1, 2 testing",
+        &[("testing", 2), ("1", 1), ("2", 1)],
+    );
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_normalize_case() {
+    check_word_count("go Go GO Stop stop", &[("go", 3), ("stop", 2)]);
+ }

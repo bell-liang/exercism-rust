@@ -1129,3 +1129,192 @@ pub fn nucleotide_counts(input: &str) -> Result<HashMap<char, usize>, char> {
    Ok(map)
 }
 */
+
+/* 16 模 10 算法
+给定一个数,判定它是否有效 Luhn 公式.
+
+Luhn 算法，也称为“模 10”算法
+
+这个Luhn 算法是一个简单的校验和公式,用于验证各种身份号码,如信用卡号码和加拿大社会保险号码.
+
+任务是检查给定字符串是否有效.
+
+验证一个数
+长度为 1 或更小的字符串无效。在输入中允许使用空格，但在检查前，应清除空格。所有其他非数字字符都是不允许的.
+
+例子 1:有效信用卡号码
+
+4539 1488 0343 6467
+LuHN 算法的第一步是，从右边开始每第二个数字加倍。我们要加倍的位
+
+
+4_3_ 1_8_ 0_4_ 6_6_
+如果加倍的数字值导致大于 9 的数字,则将此值减去 9。我们加倍的结果:
+
+
+8569 2478 0383 3437
+1_8_ => 2_7_ , 8*2 - 9 = 7
+
+然后把所有数字加起来:
+
+
+8+5+6+9+2+4+7+8+0+3+8+3+3+4+3+7 = 80
+如果总和可被 10 整除,则数字是有效的.这个号码是有效的!
+*/
+pub fn is_valid(code: &str) -> bool {
+    let char_list = code.chars().filter(|c| *c != ' ').collect::<Vec<char>>();
+    if char_list.len() == 1 {
+        return false;
+    }
+    let mut accm = 0;
+    for (index, c) in char_list.iter().rev().enumerate() {
+        let mut temp_date;
+        if c.is_ascii_digit() {
+            temp_date = c.to_digit(10).unwrap();
+        } else {
+            return false;
+        }
+        if index % 2 != 0 {
+            temp_date *= 2;
+        }
+        if temp_date > 9 {
+            accm += temp_date - 9;
+        } else {
+            accm += temp_date;
+        }
+    }
+    accm % 10 == 0
+}
+/*
+pub fn is_valid(candidate: &str) -> bool {
+   if candidate.chars().filter(|c| c.is_digit(10)).take(2).count() <= 1
+       || candidate.chars().any(|c| !c.is_digit(10) && c != ' ')
+   {
+       return false;
+   }
+
+   candidate
+       .chars()
+       .filter_map(|c| c.to_digit(10))
+       .rev()
+       .enumerate()
+       .map(|(index, digit)| if index % 2 == 0 { digit } else { digit * 2 })
+       .map(|digit| if digit > 9 { digit - 9 } else { digit })
+       .sum::<u32>() % 10 == 0
+}
+*/
+
+/* 17 最大系列乘积
+给定一个数字串,计算长度为 n 的连续子串的最大乘积.
+
+例如,对于输入'1027839564' ， 3 位数系列的最大乘积是 270 (9 * 5 * 6), 5 位数系列的最大乘积为 7560 (7 * 8 * 3 * 9 * 5).
+
+注意这些系列数字字符，在输入中，只要求相邻位置，不需要连续数值(123456..).
+
+对于输入'73167176531330624919225119674426574742355349194934'一系列 6 位数的最大乘积是 23520.
+*/
+#[derive(Debug, PartialEq)]
+pub enum Error {
+    SpanTooLong,
+    InvalidDigit(char),
+}
+pub fn lsp(string_digits: &str, span: usize) -> Result<u64, Error> {
+    let char_list = string_digits.chars().collect::<Vec<char>>();
+    if span == 0 {
+        return Ok(1);
+    }
+    if span > char_list.len() {
+        return Err(Error::SpanTooLong);
+    }
+    let mut num_list: Vec<u32> = vec![];
+    for i in 0..(char_list.len()-span+1) {
+        let mut temp_mul = 1;
+        for j in i..(i+span) {
+            if let Some(date) = char_list[j].to_digit(10) {
+                temp_mul *= date;
+            } else {
+                return Err(Error::InvalidDigit(char_list[j]));
+            }
+        }
+        num_list.push(temp_mul);
+    }
+    Ok(*num_list.iter().max().unwrap() as u64)
+}
+/*
+#[derive(Debug, PartialEq)]
+pub enum Error {
+   SpanTooLong,
+   InvalidDigit(char),
+}
+
+pub fn lsp(string_digits: &str, span: usize) -> Result<u64, Error> {
+   if span == 0 {
+       return Ok(1);
+   }
+
+   if let Some(invalid) = string_digits.chars().find(|c| !c.is_digit(10)) {
+       return Err(Error::InvalidDigit(invalid));
+   }
+
+   let products: Vec<u64> = string_digits
+       .chars()
+       .map(|c| c.to_digit(10).unwrap() as u64)
+       .collect::<Vec<u64>>()
+       .windows(span)
+       .map(|w| w.into_iter().product())
+       .collect();
+
+   if let Some(&x) = products.iter().max() {
+       Ok(x)
+   } else {
+       Err(Error::SpanTooLong)
+   }
+}
+*/
+
+/* 18 单词计数
+给定一个短语,计算该短语中，每个单词的出现次数.
+
+例如输入"olly olly in come free"
+
+
+olly: 2
+in: 1
+come: 1
+free: 1
+*/
+pub fn word_count(words: &str) -> HashMap<String, u32> {
+    let words = words.to_lowercase();
+    let word_list = words.split_whitespace().collect::<Vec<&str>>();
+    let mut word_hashmap: HashMap<String, u32> = HashMap::new();
+    for i in 0..word_list.len() {
+        let temp_word = word_list[i].trim_matches(|c: char| !c.is_ascii_alphanumeric()).trim().to_string();
+        if temp_word == "".to_string() {
+            continue;
+        }
+        if word_hashmap.contains_key(&temp_word) {
+            if let Some(count) = word_hashmap.get_mut(&temp_word) {
+                *count += 1;
+            }
+        } else {
+            word_hashmap.insert(temp_word, 1);
+        }
+    }
+    word_hashmap
+}
+/*
+use std::collections::HashMap;
+
+pub fn word_count(input: &str) -> HashMap<String, u32> {
+   let mut map: HashMap<String, u32> = HashMap::new();
+   let lower = input.to_lowercase();
+   let slice: &str = lower.as_ref();
+   for word in slice
+       .split(|c: char| !c.is_alphanumeric())
+       .filter(|s| !s.is_empty())
+   {
+       *map.entry(word.to_string()).or_insert(0) += 1;
+   }
+   map
+}
+*/
