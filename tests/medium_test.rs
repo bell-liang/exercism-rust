@@ -1631,3 +1631,169 @@ fn check_word_count(s: &str, pairs: &[(&str, u32)]) {
  fn test_normalize_case() {
     check_word_count("go Go GO Stop stop", &[("go", 3), ("stop", 2)]);
  }
+
+ // test 19
+ #[test]
+fn test_encode_yes() {
+   assert_eq!("bvh", encode_19("yes"));
+}
+
+#[test]
+//#[ignore]
+fn test_encode_no() {
+   assert_eq!("ml", encode_19("no"));
+}
+
+#[test]
+//#[ignore]
+fn test_encode_omg() {
+   assert_eq!("lnt", encode_19("OMG"));
+}
+
+#[test]
+//#[ignore]
+fn test_encode_spaces() {
+   assert_eq!("lnt", encode_19("O M G"));
+}
+
+#[test]
+//#[ignore]
+fn test_encode_mindblowingly() {
+   assert_eq!("nrmwy oldrm tob", encode_19("mindblowingly"));
+}
+
+#[test]
+//#[ignore]
+fn test_encode_numbers() {
+   assert_eq!("gvhgr mt123 gvhgr mt", encode_19("Testing,1 2 3, testing."));
+}
+
+#[test]
+//#[ignore]
+fn test_encode_deep_thought() {
+   assert_eq!("gifgs rhurx grlm", encode_19("Truth is fiction."));
+}
+
+#[test]
+//#[ignore]
+fn test_encode_all_the_letters() {
+   assert_eq!(
+       "gsvjf rxpyi ldmul cqfnk hlevi gsvoz abwlt",
+       encode_19("The quick brown fox jumps over the lazy dog.")
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_encode_ignores_non_ascii() {
+   assert_eq!("mlmzh xrrrt mlivw", encode_19("non ascii éignored"));
+}
+
+#[test]
+//#[ignore]
+fn test_decode_exercism() {
+   assert_eq!("exercism", decode_19("vcvix rhn"));
+}
+
+#[test]
+//#[ignore]
+fn test_decode_a_sentence() {
+   assert_eq!(
+       "anobstacleisoftenasteppingstone",
+       decode_19("zmlyh gzxov rhlug vmzhg vkkrm thglm v")
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_decode_numbers() {
+   assert_eq!("testing123testing", decode_19("gvhgr mt123 gvhgr mt"));
+}
+
+#[test]
+//#[ignore]
+fn test_decode_all_the_letters() {
+   assert_eq!(
+       "thequickbrownfoxjumpsoverthelazydog",
+       decode_19("gsvjf rxpyi ldmul cqfnk hlevi gsvoz abwlt")
+   );
+}
+
+// 20
+fn test(input: &str, output: &str) {
+    assert_eq!(&encrypt(input), output);
+ }
+ 
+ #[test]
+ fn test_empty_input() {
+    test("", "")
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_encrypt_also_decrypts_square() {
+    // note that you only get the exact input back if:
+    // 1. no punctuation
+    // 2. even spacing
+    // 3. all lowercase
+    // 4. square input
+    let example = "lime anda coco anut";
+    assert_eq!(example, &encrypt(&encrypt(example)));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_example() {
+    test(
+        "If man was meant to stay on the ground, god would have given us roots.",
+        "imtgdvs fearwer mayoogo anouuio ntnnlvt wttddes aohghn  sseoau ",
+    )
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_empty_last_line() {
+    test("congratulate", "crl oaa ntt gue")
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_spaces_are_reorganized() {
+    test("abet", "ae bt");
+    test("a bet", "ae bt");
+    test("     a  b     e      t             ", "ae bt");
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_everything_becomes_lowercase() {
+    test("caSe", "cs ae");
+    test("cAsE", "cs ae");
+    test("CASE", "cs ae");
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_long() {
+    test(
+        r#"
+ We choose to go to the moon.
+ 
+ We choose to go to the moon in this decade and do the other things,
+ not because they are easy, but because they are hard, because that
+ goal will serve to organize and measure the best of our energies and
+ skills, because that challenge is one that we are willing to accept,
+ one we are unwilling to postpone, and one which we intend to win,
+ and the others, too.
+ 
+ -- John F. Kennedy, 12 September 1962
+        "#,
+        &(String::from("womdbudlmecsgwdwob enooetbsenaotioihe ")
+            + "cwotcbeeaeunolnnnr henhaecrsrsealeaf1 ocieucavugetciwnk9 "
+            + "ohnosauerithcnhde6 sotteusteehaegitn2 eohhtseotsatptchn  "
+            + "tsiehetohatwtohee  oesrethrenceopwod  gtdtyhagbdhanoety  "
+            + "ooehaetaesaresih1  tgcirygnsklewtne2  ooaneaoitilweptrs  "
+            + "ttdgerazoleiaoese  hoesaeleflnlrnntp  etanshwaosgleedot  "
+            + "mhnoyainubeiuatoe  oedtbrldreinnnojm "),
+    )
+ }

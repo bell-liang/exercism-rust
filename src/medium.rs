@@ -1318,3 +1318,139 @@ pub fn word_count(input: &str) -> HashMap<String, u32> {
    map
 }
 */
+
+/* 19 Atbash 加密
+创建 Atbash 密码的实现,这是在中东创建的古老加密系统.
+
+Atbash 密码是一种简单的替换密码,它依赖于转置字母表中的所有字母,使得生成的字母表向后。
+
+第一个字母替换为最后一个字母,
+第二个字母替换为倒数第二个字母,
+依此类推.
+拉丁字母的 Atbash 密码如下:
+
+
+明文:  abcdefghijklmnopqrstuvwxyz
+加密:  zyxwvutsrqponmlkjihgfedcba
+它是一个非常弱的加密方式，因为它只有一个加密可能性，且为一个简单的单字母替换密码。但是,这并不是现在’加密游戏-练习时间’的问题.
+
+密文以固定长度的组写出，传统的组大小为 5 个字母，并且不包括标点符号。这是为了使单词边界，更难猜测
+*/
+fn assic(c: char) -> u8 {
+    c as u8
+}
+fn transport(c: char) -> char {
+    if c.is_digit(10) {
+        c
+    } else {
+        (assic('z') - assic(c) + assic('a')) as char
+    }
+}
+
+pub fn encode_19(plain: &str) -> String {
+    plain.to_lowercase()
+        .chars()
+        .filter(|c| c.is_ascii())
+        .filter(|c| c.is_alphanumeric())
+        .map(|c| transport(c))
+        .collect::<Vec<char>>()
+        .chunks(5)
+        .map(|ch| ch.into_iter().clone().collect::<String>())
+        .collect::<Vec<String>>()
+        .join(" ")
+}
+pub fn decode_19(cipher: &str) -> String {
+    cipher.chars()
+        .filter(|c| c.is_alphanumeric())
+        .map(|c| transport(c))
+        .collect::<String>()
+}
+
+/* 20 密码矩形
+实现，用于组成称为方形代码的加密信息的经典方法.
+
+给定英文文本,输出该文本的加密编码版本。
+
+首先,输入被规范化:
+
+从英文文本中删除空格和标点符号,并且消息是朝下的.
+然后,
+
+规范化字符被分成行。当使用插入的换行符打印时,这些行自自然然形成类似矩形的样子。
+例如,句子
+
+
+"If man was meant to stay on the ground, god would have given us roots."
+规范化为:
+
+
+"ifmanwasmeanttostayonthegroundgodwouldhavegivenusroots"
+明文应该组织成一个矩形。矩形的大小(r x c)应该根据消息的长度来决定c >= r和c - r <= 1,这里的c是列数和r是行数.
+
+我们的标准化文本长度为 54 个字符，用c = 8和r = 7指示矩形:
+
+
+"ifmanwas"
+"meanttos"
+"tayonthe"
+"groundgo"
+"dwouldha"
+"vegivenu"
+"sroots  "
+通过向下(第一行第一个,拼接第二行第一个)，读取从左到右的列来获得编码消息.
+
+上面的消息编码为:
+
+
+"imtgdvsfearwermayoogoanouuiontnnlvtwttddesaohghnsseoau"
+根据输出的，矩形块编码文本的大小(r X c)，表明有c块r长度的编码字串，以空格分隔。对于那些n位字符，但少于规定的长度的，每个尾添一个空格。
+
+
+"imtgdvs fearwer mayoogo anouuio ntnnlvt wttddes aohghn  sseoau "
+请注意,如果我们要堆叠这些,我们可以直观地，将密文解码回原始消息: (第一行第一个，拼接第二行第一个...)
+
+
+"imtgdvs"
+"fearwer"
+"mayoogo"
+"anouuio"
+"ntnnlvt"
+"wttddes"
+"aohghn "
+"sseoau "
+*/
+pub fn encrypt(input: &str) -> String {
+    let input = input.to_lowercase().chars().filter(|c| c.is_ascii_alphanumeric()).collect::<Vec<char>>();
+    println!("{}", (input.len() as f32).sqrt() as u32);
+    let input = input.chunks(({
+                        let len = (input.len() as f32).sqrt() as u32 as usize;
+                        if input.len() == len*len {
+                            len
+                        } else {
+                            len + 1
+                        }
+                    }) as usize)
+        .map(|ch| ch.into_iter().clone().collect::<String>())
+        .collect::<Vec<String>>();
+    println!("{:?}", input);
+    let mut output = vec![];
+    for i in 0..input[0].len() {
+        let mut temp = vec![];
+        for j in 0..input.len() {
+            temp.push({
+                if let Some(row) = input.get(j) {
+                    if let Some(clumn) = row.get(i..i+1) {
+                        let c: u8 = clumn.as_bytes()[0];
+                        c as char
+                    } else {
+                        ' '
+                    }
+                } else {
+                    ' '
+                }
+            })
+        }
+        output.push(temp.into_iter().collect::<String>());
+    }
+    output.join(" ")
+}
