@@ -1420,6 +1420,9 @@ pub fn decode_19(cipher: &str) -> String {
 "sseoau "
 */
 pub fn encrypt(input: &str) -> String {
+    if input.len() == 0 {
+        return "".to_string()
+    }
     let input = input.to_lowercase().chars().filter(|c| c.is_ascii_alphanumeric()).collect::<Vec<char>>();
     println!("{}", (input.len() as f32).sqrt() as u32);
     let input = input.chunks(({
@@ -1454,3 +1457,58 @@ pub fn encrypt(input: &str) -> String {
     }
     output.join(" ")
 }
+
+/* 21 旋转密码
+创建旋转密码的实现,有时也称为 Caesar 密码.
+
+Caesar 密码是一个简单的移位密码，它依赖于使用0到26整数(key)，在字母表中转置所有字母。由于模运算，使用0要么26，总是会产生相同的输出。将字母移动为与 key 值一样多的值。
+
+旋转密码的一般表示法是ROT + <key>。最常用的旋转密码是ROT13.
+
+一个拉丁字母表的ROT13加密如下:
+
+
+原文:  abcdefghijklmnopqrstuvwxyz
+密文:  nopqrstuvwxyzabcdefghijklm
+它比 Atbash 密码更强大,因为它有 27 个可能性 key，和 25 个可用的密文.
+
+密文会与输入相同的格式写出,包括空格和标点符号.
+*/
+pub fn rotate(input: &str, key: i8) -> String {
+    input.chars()
+        .map(|c: char| {
+            if c.is_ascii_alphabetic() {
+                let key = key as u8;
+                if c.is_ascii_lowercase() {
+                    if c as u8 + key > 'z' as u8 {
+                        ('a' as u8 + c as u8 + key - 'z' as u8 - 1) as u8 as char
+                    } else {
+                        (c as u8 + key) as u8 as char
+                    }
+                } else {
+                    if c as u8 + key > 'Z' as u8 {
+                        ('A' as u8 + c as u8 + key - 'Z' as u8 - 1) as u8 as char
+                    } else {
+                        (c as u8 + key) as u8 as char
+                    }
+                }
+            } else {
+                c
+            }
+        })
+        .collect::<String>()
+}
+/*
+pub fn rotate(text: &str, shift_key: u8) -> String {
+   text.chars()
+       .map(|c| {
+           let case = if c.is_uppercase() { 'A' } else { 'a' } as u8;
+           if c.is_alphabetic() {
+               (((c as u8 - case + shift_key) % 26) + case) as char
+           } else {
+               c
+           }
+       })
+       .collect::<String>()
+}
+*/
