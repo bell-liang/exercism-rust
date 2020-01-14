@@ -1552,11 +1552,408 @@ Caesar Cipher
 如果提交的密钥不只由小写字母组成,那解决方案应该以适当提醒的方式处理错误.
 */
 pub fn encode_22(key: &str, s: &str) -> Option<String> {
-    if !key.chars().all(|c: char| c.is_ascii_lowercase()) {
+    if !key.chars().all(|c: char| c.is_ascii_lowercase()) || key.is_empty() {
         return None;
     }
     Some(s.chars()
         .zip(key.chars())
         .map(|(s1, k1)| ((s1 as u8 - 'a' as u8 + k1 as u8 - 'a' as u8) % 26 + 'a' as u8) as char)
         .collect::<String>())
+}
+pub fn decode_22(key: &str, s: &str) -> Option<String> {
+    if !key.chars().all(|c: char| c.is_ascii_lowercase()) || key.is_empty() {
+        return None;
+    }
+    Some(s.chars()
+        .zip(key.chars())
+        .map(|(s1, k1)| ('z' as i8 - ('z' as i8 - (s1 as i8 - (k1 as i8 - 'a' as i8))) % 26) as u8 as char)
+        .collect::<String>())
+}
+use rand::Rng;
+pub fn encode_random(s: &str) -> (String, String) {
+    let mut r = rand::thread_rng();
+    let mut key = String::new();
+    for _ in 0..100 {
+        key.push(char::from('a' as u8 + r.gen_range(0, 26)));
+    }
+    let encoded = encode_22(&key, s);
+    (key, encoded.unwrap())
+}
+/*
+extern crate rand;
+use rand::Rng;
+
+pub fn encode_random(s: &str) -> (String, String) {
+   let mut r = rand::thread_rng();
+   let mut key = String::new();
+   for _ in 0..100 {
+       key.push(char::from('a' as u8 + r.gen_range(0, 26)));
+   }
+   let encoded = encode(&key, s);
+   (key, encoded.unwrap())
+}
+
+pub fn encode(key: &str, s: &str) -> Option<String> {
+   shift(key, s, 1)
+}
+
+pub fn decode(key: &str, s: &str) -> Option<String> {
+   shift(key, s, -1)
+}
+
+fn shift(key: &str, s: &str, dir: i8) -> Option<String> {
+   if key.is_empty() {
+       return None;
+   }
+   let mut o = String::new();
+   let mut i = 0;
+   let mut key_arr = Vec::new();
+   for c in key.chars() {
+       if !c.is_ascii_lowercase() {
+           return None;
+       }
+       key_arr.push(c);
+   }
+   for c in s.chars() {
+       let shift = key_arr[i % key_arr.len()] as i8 - 'a' as i8;
+       let n = ((c as i8 - 'a' as i8 + dir * shift) % 26 + 26) % 26;
+       o.push(char::from('a' as u8 + n as u8));
+       i += 1;
+   }
+   Some(o)
+}
+*/
+
+/* 23 栅栏密码
+实现篱笆密码法的编/解码.
+
+篱笆密码法是一种置换式密码,它从编码的方式得到它的名字。它早被古希腊人所使用。
+
+在 栅栏 密码中,信息向下写在虚构的篱笆的连续”rail”上，然后当我们到达底部时，又向上移动(像锯齿形)。最后,消息以行读取.
+
+例如,使用三个”Rails(栅栏)”，和加密”WE ARE DISCOVERED FLEE AT ONCE”信息，密文写道:
+
+
+W . . . E . . . C . . . R . . . L . . . T . . . E
+. E . R . D . S . O . E . E . F . E . A . O . C .
+. . A . . . I . . . V . . . D . . . E . . . N . .
+然后读出:
+
+
+WECRLTEERDSOEEFEAOCAIVDEN
+要解密一条消息,你要采用锯齿形读法，而密文则是一行一行看。
+
+
+? . . . ? . . . ? . . . ? . . . ? . . . ? . . . ?
+. ? . ? . ? . ? . ? . ? . ? . ? . ? . ? . ? . ? .
+. . ? . . . ? . . . ? . . . ? . . . ? . . . ? . .
+第一行有七个点,可以用”WECRRLTE”填充.
+
+
+W . . . E . . . C . . . R . . . L . . . T . . . E
+. ? . ? . ? . ? . ? . ? . ? . ? . ? . ? . ? . ? .
+. . ? . . . ? . . . ? . . . ? . . . ? . . . ? . .
+现在第二行为”ERDSOEEFEAOC”.
+
+
+W . . . E . . . C . . . R . . . L . . . T . . . E
+. E . R . D . S . O . E . E . F . E . A . O . C .
+. . ? . . . ? . . . ? . . . ? . . . ? . . . ? . .
+最后一排”AIVDEN”.
+
+
+W(1) . . . E . . . C . . . R . . . L . . . T . . . E
+. E(2) . R . D . S . O . E . E . F . E . A . O . C .
+. . A(3) . . . I . . . V . . . D . . . E . . . N . .
+1,2,3只是为了方便理解，不存在任何地方
+
+如果你现在锯齿形阅读,你可以阅读原始消息.
+*/
+pub struct RailFence(u32);
+impl RailFence {
+    pub fn new(rails: u32) -> RailFence {
+        RailFence(rails)
+    }
+    pub fn encode(&self, text: &str) -> String {
+        let mut out: Vec<String> = Vec::with_capacity(self.0 as usize);
+        for _ in 0..self.0 {
+            out.push("".to_string());
+        }
+        let mut index = 0;
+        let mut down = true;
+        let mut text_iter = text.chars();
+        let mut count = 0;
+        while count < text.len() {
+            if down {
+                if let Some(c) = text_iter.next() {
+                    out[index].push(c);
+                }
+                count += 1;
+                if index == (self.0-1) as usize {
+                    down = false;
+                    index -= 1;
+                } else {
+                    index += 1;
+                }
+            } else {
+                if index == 0 {
+                    down = true;
+                } else {
+                    if let Some(c) = text_iter.next() {
+                        out[index].push(c);
+                    }
+                    index -= 1;
+                    count += 1;
+                }
+            }
+        }
+        out.join("")
+    }
+    pub fn decode(&self, cipher: &str) -> String {
+        let mut count = Vec::with_capacity(self.0 as usize);
+        for _ in 0..self.0 {
+            count.push(0);
+        }
+        let mut index = 0;
+        let mut down = true;
+        let mut text_iter = cipher.chars();
+        while let Some(_) = text_iter.next() {
+            if down {
+                count[index] += 1;
+                index += 1;
+                if index == self.0 as usize {
+                    down = false;
+                    index -= 2;
+                }
+            } else {
+                count[index] += 1;
+                index -= 1;
+                if index == 0 {
+                    down = true;
+                }
+            }
+        }
+        for i in 1..count.len() {
+            count[i] += count[i-1];
+        }
+        count.insert(0, 0);
+        let mut out: Vec<String> = Vec::with_capacity(self.0 as usize);
+        for _ in 0..count.len()-1 {
+            out.push("".to_string());
+        }
+        for i in 0..(count.len()-1) {
+            out[i].push_str(&cipher.get(count[i]..count[i+1]).unwrap().to_owned());
+        }
+        let mut out_string = "".to_string();
+        let mut id = 0;
+        let mut medium = vec![];
+        for i in 0..out.len() {
+            medium.push(out[i].chars());
+        }
+        while id < cipher.len() {
+            for i in 0..medium.len() {
+                if let Some(c) = medium[i].next() {
+                    out_string.push(c);
+                }
+                id += 1;
+            }
+            for i in (1..medium.len()-1).rev() {
+                if let Some(c) = medium[i].next() {
+                    out_string.push(c);
+                }
+                id += 1;
+            }
+        }
+        out_string
+    }
+}
+/*
+pub struct RailFence(u32);
+
+fn uncons(s: &str) -> (&str, &str) {
+   s.split_at(s.chars().next().map_or(0, |c| c.len_utf8()))
+}
+
+impl RailFence {
+   pub fn new(rails: u32) -> RailFence {
+       RailFence(rails)
+   }
+
+   fn next(&self, down: &mut bool, rail: &mut usize) {
+       if *down {
+           if *rail + 1 < self.0 as usize {
+               *rail += 1;
+           } else {
+               *down = false;
+               *rail -= 1;
+           }
+       } else {
+           if *rail > 0 {
+               *rail -= 1;
+           } else {
+               *down = true;
+               *rail += 1;
+           }
+       }
+   }
+
+   pub fn encode(&self, text: &str) -> String {
+       let mut rails =
+           vec![String::with_capacity(1 + (text.len() / self.0 as usize)); self.0 as usize];
+       let mut down = true;
+       let mut rail = 0;
+
+       for ch in text.chars() {
+           rails[rail].push(ch);
+           self.next(&mut down, &mut rail);
+       }
+
+       rails.join("")
+   }
+
+   pub fn decode(&self, cipher: &str) -> String {
+       let mut rail_caps = vec![0; self.0 as usize];
+       let mut down = true;
+       let mut rail = 0;
+
+       for _ in cipher.chars() {
+           rail_caps[rail] += 1;
+           self.next(&mut down, &mut rail);
+       }
+
+       // this vector owns the text of each rail
+       let mut rails_own = Vec::with_capacity(self.0 as usize);
+       let mut skip = 0;
+
+       for &cap in rail_caps.iter() {
+           rails_own.push(
+               cipher
+                   .chars()
+                   .skip(skip)
+                   .enumerate()
+                   .take_while(|&(i, _)| i < cap)
+                   .map(|(_, c)| c)
+                   .collect::<String>(),
+           );
+           skip += cap;
+       }
+
+       // this vector holds string slices viewing into rails_own
+       let mut rails: Vec<&str> = rails_own.iter().map(|r| r.as_ref()).collect();
+
+       let mut out = String::with_capacity(cipher.len());
+       down = true;
+       rail = 0;
+
+       while rails.iter().any(|r: &&str| r.len() > 0) {
+           let (head, t_rail) = uncons(rails[rail]);
+           rails[rail] = t_rail;
+           self.next(&mut down, &mut rail);
+           out.push_str(head);
+       }
+
+       out
+   }
+}
+*/
+
+/* 24 ETL
+ETL，是英文 Extract-Transform-Load 的缩写，用来描述将数据从来源端经过萃取、转置、加载至目的端的过程
+
+ETL
+提取转换负载(ETL)是一种很有意思的说法,”我们在这个系统中有一些遗留的遗留数据,现在我们需要在这个闪亮的新系统中使用,所以我们将迁移它.”
+
+(通常情况下,接下来是，”我们只需要运行一次就好啦。”之后，通常会有很多怒拍额头,并抱怨自身有多么愚蠢。
+
+目标
+我们将从遗留系统中，提取一些拼字游戏分数.
+
+旧的系统存储每一个字母的列表:
+
+1 分:”A”,”E”,”I”,”O”,”U”,”L”,”N”,”R”,”S”,”T”,
+2 分:”D”,”G”,
+3 分:”B”、”C”、”M”、”P”,
+4 分:”F”、”H”、”V”、”W”、”Y”,
+5 分:”K”,
+8 分:”J”,”X”,
+10 分:”Q”,”Z”,
+闪亮的新拼写系统存储每个字母的分数，这使得计算一个单词的分数更快、更容易。它也把字母存为小写字母，而不考虑输入字母的情况:
+
+“a” 值 1 分.
+“b” 值 3 分.
+“c” 值 3 分.
+“d” 值 2 分.
+等.
+你的任务,你应该选择接受它, 应将遗留数据格式，转换成闪亮的新格式。
+*/
+use std::collections::BTreeMap;
+pub fn transform(h: &BTreeMap<i32, Vec<char>>) -> BTreeMap<char, i32> {
+    let mut out: BTreeMap<char, i32> = BTreeMap::new();
+    for (key, value) in h.iter() {
+        for c in value.iter() {
+            out.insert(c.to_ascii_lowercase(), *key);
+        }
+    }
+    out
+}
+/*
+use std::collections::BTreeMap;
+
+pub fn transform(input: &BTreeMap<i32, Vec<char>>) -> BTreeMap<char, i32> {
+   input
+       .iter()
+       .flat_map(|(&n, vec)| vec.iter().map(move |c| (c.to_ascii_lowercase(), n)))
+       .collect()
+}
+*/
+
+/* 25 集合操作
+实现accumulate操作, 给出一个集合，和一个操作行为，该行为会影响到集合中的每个值，并返回一个新的，包含影响结果值的集合
+
+如:给出数字的集合:
+
+1,2,3,4,5
+和一个平方操作:
+
+平方它(x => x * x)
+您的代码应该能够生成原集合的平方集合:
+
+1,4,9,16,25
+查看测试套件，以查看预期的函数命名.
+*/
+pub fn map<T, F, U>(input: Vec<T>, mut f: F) -> Vec<U>
+    where F: FnMut(T) -> U,
+    {
+        let mut out = Vec::with_capacity(input.len());
+        for i in input {
+            out.push(f(i));
+        }
+        out
+}
+
+/* 26 缩写
+将短语转换为，其首字母缩写词。
+
+技术人员都喜欢他们的 TLA(三字母缩略语(Three Letter Acronyms)显得高大上)!
+
+通过编写将诸如 Portable Network Graphics 之类的长名称，转换为其首字母缩略词(PNG)的程序,帮助生成一些术语。
+*/
+pub fn abbreviate(phrase: &str) -> String {
+    let str_list = phrase.split_whitespace();
+    let mut out = "".to_string();
+    for s in str_list {
+        if s.chars().all(|c| c.is_lowercase()) {
+            let sub_s = s.split(|c| c == '-');
+            for s_s in sub_s {
+               out.push_str(s_s.get(0..1).unwrap()); 
+            }
+        } else {
+            for c in s.chars() {
+                if c.is_ascii_uppercase() {
+                    out.push(c);
+                }
+            }
+        }
+    }
+    out
 }

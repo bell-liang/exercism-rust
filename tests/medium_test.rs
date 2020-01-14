@@ -1860,3 +1860,465 @@ fn rotate_all_the_letters() {
        rotate("The quick brown fox jumps over the lazy dog.", 13)
    );
 }
+
+// 22
+use std::collections::HashSet;
+
+const PLAIN_TEXT: &str = "thisismysecret";
+const KEY: &str = "abcdefghij";
+
+#[test]
+fn cipher_can_encode_with_given_key() {
+   assert_eq!(encode_22(KEY, "aaaaaaaaaa"), Some(KEY.to_string()));
+}
+
+#[test]
+//#[ignore]
+fn cipher_can_decode_with_given_key() {
+   assert_eq!(decode_22(KEY, "abcdefghij"), Some("aaaaaaaaaa".to_string()));
+}
+
+#[test]
+//#[ignore]
+fn cipher_is_reversible_given_key() {
+   assert_eq!(
+       decode_22(KEY, &encode_22(KEY, PLAIN_TEXT).unwrap()),
+       Some("thisismyse".to_string())
+   );
+}
+
+#[test]
+//#[ignore]
+fn cipher_can_double_shift_encode() {
+   let plain_text = "iamapandabear";
+   assert_eq!(
+       encode_22(plain_text, plain_text),
+       Some("qayaeaagaciai".to_string())
+   );
+}
+
+#[test]
+//#[ignore]
+fn cipher_can_wrap_encode() {
+   assert_eq!(encode_22(KEY, "zzzzzzzzzz"), Some("zabcdefghi".to_string()));
+}
+
+#[test]
+//#[ignore]
+fn cipher_can_encode_a_message_that_is_shorter_than_the_key() {
+   assert_eq!(encode_22(KEY, "aaaaa"), Some("abcde".to_string()));
+}
+
+#[test]
+//#[ignore]
+fn cipher_can_decode_a_message_that_is_shorter_than_the_key() {
+   assert_eq!(decode_22(KEY, "abcde"), Some("aaaaa".to_string()));
+}
+
+#[test]
+//#[ignore]
+fn encode_returns_none_with_an_all_caps_key() {
+   let key = "ABCDEF";
+   assert_eq!(encode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn encode_returns_none_with_an_any_caps_key() {
+   let key = "abcdEFg";
+   assert_eq!(encode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn encode_returns_none_with_numeric_key() {
+   let key = "12345";
+   assert_eq!(encode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn encode_returns_none_with_any_numeric_key() {
+   let key = "abcd345ef";
+   assert_eq!(encode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn encode_returns_none_with_empty_key() {
+   let key = "";
+   assert_eq!(encode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn decode_returns_none_with_an_all_caps_key() {
+   let key = "ABCDEF";
+   assert_eq!(decode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn decode_returns_none_with_an_any_caps_key() {
+   let key = "abcdEFg";
+   assert_eq!(decode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn decode_returns_none_with_numeric_key() {
+   let key = "12345";
+   assert_eq!(decode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn decode_returns_none_with_any_numeric_key() {
+   let key = "abcd345ef";
+   assert_eq!(decode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn decode_returns_none_with_empty_key() {
+   let key = "";
+   assert_eq!(decode_22(key, PLAIN_TEXT), None);
+}
+
+#[test]
+//#[ignore]
+fn encode_random_uses_key_made_of_letters() {
+   let (k, _) = encode_random(PLAIN_TEXT);
+   assert!(k.chars().all(|c| c.is_ascii_lowercase()));
+}
+
+#[test]
+//#[ignore]
+fn encode_random_uses_key_of_100_characters_or_more() {
+   let (k, _) = encode_random(PLAIN_TEXT);
+   assert!(k.len() >= 100);
+}
+
+#[test]
+//#[ignore]
+fn encode_random_uses_randomly_generated_key() {
+   let mut keys = HashSet::new();
+   let trials = 100;
+   for _ in 0..trials {
+       keys.insert(encode_random(PLAIN_TEXT).0);
+   }
+   assert_eq!(keys.len(), trials);
+}
+
+#[test]
+//#[ignore]
+fn encode_random_can_encode() {
+   let (k, encoded) = encode_random("aaaaaaaaaa");
+   assert_eq!(encoded, k.split_at(10).0);
+}
+
+#[test]
+//#[ignore]
+fn encode_random_can_decode() {
+   let (k, _) = encode_random("aaaaaaaaaa");
+   assert_eq!(decode_22(&k, k.split_at(10).0), Some("aaaaaaaaaa".to_string()));
+}
+
+#[test]
+//#[ignore]
+fn encode_random_is_reversible() {
+   let (k, encoded) = encode_random(PLAIN_TEXT);
+   assert_eq!(decode_22(&k, &encoded), Some(PLAIN_TEXT.to_string()));
+}
+
+// 23
+fn process_encode_case(input: &str, rails: u32, expected: &str) {
+   let rail_fence = RailFence::new(rails);
+   assert_eq!(rail_fence.encode(input), expected);
+}
+
+/// Process a single test case for the property `decode`
+///
+/// All cases for the `decode` property are implemented
+/// in terms of this function.
+fn process_decode_case(input: &str, rails: u32, expected: &str) {
+   let rail_fence = RailFence::new(rails);
+   assert_eq!(rail_fence.decode(input), expected);
+}
+
+// encode
+
+#[test]
+/// encode with two rails
+fn test_encode_with_two_rails() {
+   process_encode_case("XOXOXOXOXOXOXOXOXO", 2, "XXXXXXXXXOOOOOOOOO");
+}
+
+#[test]
+//#[ignore]
+/// encode with three rails
+fn test_encode_with_three_rails() {
+   process_encode_case("WEAREDISCOVEREDFLEEATONCE", 3, "WECRLTEERDSOEEFEAOCAIVDEN");
+}
+
+#[test]
+//#[ignore]
+/// encode with ending in the middle
+fn test_encode_with_ending_in_the_middle() {
+   process_encode_case("EXERCISES", 4, "ESXIEECSR");
+}
+
+// decode
+
+#[test]
+//#[ignore]
+/// decode with three rails
+fn test_decode_with_three_rails() {
+   process_decode_case("TEITELHDVLSNHDTISEIIEA", 3, "THEDEVILISINTHEDETAILS");
+}
+
+#[test]
+//#[ignore]
+/// decode with five rails
+fn test_decode_with_five_rails() {
+   process_decode_case("EIEXMSMESAORIWSCE", 5, "EXERCISMISAWESOME");
+}
+
+#[test]
+//#[ignore]
+/// decode with six rails
+fn test_decode_with_six_rails() {
+   process_decode_case(
+       "133714114238148966225439541018335470986172518171757571896261",
+       6,
+       "112358132134558914423337761098715972584418167651094617711286",
+   );
+}
+
+#[test]
+//#[ignore]
+/// encode wide characters
+///
+/// normally unicode is not part of exercism exercises, but in an exercise
+/// specifically oriented around shuffling characters, it seems worth ensuring
+/// that wide characters are handled properly
+///
+/// this text is possibly one of the most famous haiku of all time, by
+/// Matsuo Bashō (松尾芭蕉)
+fn test_encode_wide_characters() {
+   process_encode_case(
+       "古池 蛙飛び込む 水の音",
+       3,
+       "古飛 池蛙びむ水音 込の",
+   );
+}
+
+// 24
+use std::collections::BTreeMap;
+#[test]
+fn test_transform_one_value() {
+   let input = input_from(&[(1, vec!['A'])]);
+
+   let expected = expected_from(&[('a', 1)]);
+
+   assert_eq!(expected, transform(&input));
+}
+
+#[test]
+//#[ignore]
+fn test_transform_more_values() {
+   let input = input_from(&[(1, vec!['A', 'E', 'I', 'O', 'U'])]);
+
+   let expected = expected_from(&[('a', 1), ('e', 1), ('i', 1), ('o', 1), ('u', 1)]);
+
+   assert_eq!(expected, transform(&input));
+}
+
+#[test]
+//#[ignore]
+fn test_more_keys() {
+   let input = input_from(&[(1, vec!['A', 'E']), (2, vec!['D', 'G'])]);
+
+   let expected = expected_from(&[('a', 1), ('e', 1), ('d', 2), ('g', 2)]);
+
+   assert_eq!(expected, transform(&input));
+}
+
+#[test]
+//#[ignore]
+fn test_full_dataset() {
+   let input = input_from(&[
+       (1, vec!['A', 'E', 'I', 'O', 'U', 'L', 'N', 'R', 'S', 'T']),
+       (2, vec!['D', 'G']),
+       (3, vec!['B', 'C', 'M', 'P']),
+       (4, vec!['F', 'H', 'V', 'W', 'Y']),
+       (5, vec!['K']),
+       (8, vec!['J', 'X']),
+       (10, vec!['Q', 'Z']),
+   ]);
+
+   let expected = expected_from(&[
+       ('a', 1),
+       ('b', 3),
+       ('c', 3),
+       ('d', 2),
+       ('e', 1),
+       ('f', 4),
+       ('g', 2),
+       ('h', 4),
+       ('i', 1),
+       ('j', 8),
+       ('k', 5),
+       ('l', 1),
+       ('m', 3),
+       ('n', 1),
+       ('o', 1),
+       ('p', 3),
+       ('q', 10),
+       ('r', 1),
+       ('s', 1),
+       ('t', 1),
+       ('u', 1),
+       ('v', 4),
+       ('w', 4),
+       ('x', 8),
+       ('y', 4),
+       ('z', 10),
+   ]);
+
+   assert_eq!(expected, transform(&input));
+}
+
+fn input_from(v: &[(i32, Vec<char>)]) -> BTreeMap<i32, Vec<char>> {
+   v.iter().cloned().collect()
+}
+
+fn expected_from(v: &[(char, i32)]) -> BTreeMap<char, i32> {
+   v.iter().cloned().collect()
+}
+
+// 25
+fn square(x: i32) -> i32 {
+   x * x
+}
+
+#[test]
+fn func_single() {
+   let input = vec![2];
+   let expected = vec![4];
+   assert_eq!(map(input, square), expected);
+}
+
+#[test]
+//#[ignore]
+fn func_multi() {
+   let input = vec![2, 3, 4, 5];
+   let expected = vec![4, 9, 16, 25];
+   assert_eq!(map(input, square), expected);
+}
+
+#[test]
+//#[ignore]
+fn closure() {
+   let input = vec![2, 3, 4, 5];
+   let expected = vec![4, 9, 16, 25];
+   assert_eq!(map(input, |x| x * x), expected);
+}
+
+#[test]
+//#[ignore]
+fn closure_floats() {
+   let input = vec![2.0, 3.0, 4.0, 5.0];
+   let expected = vec![4.0, 9.0, 16.0, 25.0];
+   assert_eq!(map(input, |x| x * x), expected);
+}
+
+#[test]
+//#[ignore]
+fn strings() {
+   let input = vec!["1".to_string(), "2".into(), "3".into()];
+   let expected = vec!["11".to_string(), "22".into(), "33".into()];
+   assert_eq!(map(input, |s| s.repeat(2)), expected);
+}
+
+#[test]
+//#[ignore]
+fn change_in_type() {
+   let input: Vec<&str> = vec!["1", "2", "3"];
+   let expected: Vec<String> = vec!["1".into(), "2".into(), "3".into()];
+   assert_eq!(map(input, |s| s.to_string()), expected);
+}
+
+#[test]
+//#[ignore]
+fn mutating_closure() {
+   let mut counter = 0;
+   let input = vec![-2, 3, 4, -5];
+   let expected = vec![2, 3, 4, 5];
+   let result = map(input, |x: i64| {
+       counter += 1;
+       x.abs()
+   });
+   assert_eq!(result, expected);
+   assert_eq!(counter, 4);
+}
+
+#[test]
+//#[ignore]
+fn minimal_bounds_on_input_and_output() {
+   // must be able to accept arbitrary input and output types
+   struct Foo;
+   struct Bar;
+   map(vec![Foo], |_| Bar);
+}
+
+// 26
+#[test]
+fn empty() {
+   assert_eq!(abbreviate(""), "");
+}
+
+#[test]
+//#[ignore]
+fn basic1() {
+   assert_eq!(abbreviate("Portable Network Graphics"), "PNG");
+}
+
+#[test]
+//#[ignore]
+fn lowercase_words() {
+   assert_eq!(abbreviate("Ruby on Rails"), "ROR");
+}
+
+#[test]
+//#[ignore]
+fn camelcase() {
+   assert_eq!(abbreviate("HyperText Markup Language"), "HTML");
+}
+
+#[test]
+//#[ignore]
+fn punctuation() {
+   assert_eq!(abbreviate("First In, First Out"), "FIFO");
+}
+
+#[test]
+//#[ignore]
+fn all_caps_words() {
+   assert_eq!(abbreviate("PHP: Hypertext Preprocessor"), "PHP");
+}
+
+#[test]
+//#[ignore]
+fn non_acronym_all_caps_word() {
+   assert_eq!(abbreviate("GNU Image Manipulation Program"), "GIMP");
+}
+
+#[test]
+//#[ignore]
+fn hyphenated() {
+   assert_eq!(
+       abbreviate("Complementary metal-oxide semiconductor"),
+       "CMOS"
+   );
+}
