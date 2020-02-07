@@ -1939,21 +1939,1668 @@ pub fn map<T, F, U>(input: Vec<T>, mut f: F) -> Vec<U>
 通过编写将诸如 Portable Network Graphics 之类的长名称，转换为其首字母缩略词(PNG)的程序,帮助生成一些术语。
 */
 pub fn abbreviate(phrase: &str) -> String {
-    let str_list = phrase.split_whitespace();
+    let str_list = phrase.split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>();
     let mut out = "".to_string();
     for s in str_list {
-        if s.chars().all(|c| c.is_lowercase()) {
-            let sub_s = s.split(|c| c == '-');
-            for s_s in sub_s {
-               out.push_str(s_s.get(0..1).unwrap()); 
-            }
+        if s.chars().all(|c: char| c.is_lowercase()) || s.chars().all(|c: char| c.is_uppercase()) {
+            out.push(s.chars().next().unwrap());
         } else {
             for c in s.chars() {
-                if c.is_ascii_uppercase() {
+                if c.is_uppercase() {
                     out.push(c);
                 }
             }
         }
     }
-    out
+    out.to_uppercase()
 }
+/*
+pub fn abbreviate(phrase: &str) -> String {
+   phrase
+       .split(|c: char| c.is_whitespace() || !c.is_alphanumeric())
+       .flat_map(|word| split_camel(word))
+       .filter_map(|word| word.chars().next())
+       .collect::<String>()
+       .to_uppercase()
+}
+
+fn split_camel(phrase: &str) -> Vec<String> {
+   let chars: Vec<char> = phrase.chars().collect();
+   let mut words: Vec<String> = Vec::new();
+   let mut word_start: usize = 0;
+   for (i, c) in chars.iter().enumerate() {
+       if i == chars.len() - 1 || c.is_lowercase() && chars[i + 1].is_uppercase() {
+           words.push(chars[word_start..i + 1].iter().cloned().collect());
+           word_start = i + 1;
+       }
+   }
+   words
+}
+*/
+
+/* 27 素数筛
+使用 Eratosthenes 的 Sieve 查找从 2 到给定数字的所有素数.
+
+这是一种简单且历史悠久的筛法，用来找出一定范围内所有的素数。
+
+所使用的原理是从 2 开始，将每个素数的各个倍数，标记成合数。一个素数的各个倍数，是一个差为此素数本身的等差数列。此为这个筛法和试除法不同的关键之处，后者是以素数来测试每个待测数能否被整除。
+
+埃拉托斯特尼筛法是列出所有小素数最有效的方法之一，其名字来自于古希腊数学家埃拉托斯特尼，并且被描述在另一位古希腊数学家尼科马库斯所著的《算术入门》中。
+
+维基百科文章有一个有用的图解解释算法:
+
+请注意,这是一个非常具体的算法,并且测试不会检查您是否实现了算法,只要您已经提出了正确的素数列表.https://zh.wikipedia.org/wiki/埃拉托斯特尼筛法
+
+一个好的第一个测试是，检查你不使用除法或余数运算(div, /, mod or % 具体语言所具有的)
+*/
+pub fn primes_up_to(upper_bound: u64) -> Vec<u64> {
+    if upper_bound == 1 {
+        return vec![];
+    }
+    let mut all: Vec<u64> = (1..upper_bound).map(|x| x + 1).collect::<Vec<u64>>();
+    let mut index = 0;
+    let mut p = all[index];
+    while *all.last().unwrap() >= p * p {
+        all.retain(|&x| (x == p) || (x % p != 0));
+        index += 1;
+        p = all[index];
+        println!("{}, {:?}", p, all);
+    }
+    all
+}
+/*
+pub fn primes_up_to(limit: i32) -> Vec<i32> {
+   let mut integers = (1..limit).map(|x| x + 1).collect::<Vec<i32>>();
+   let mut p = Some(2);
+
+   while let Some(y) = p {
+       integers.retain(|&x| (x == y) || (x % y != 0));
+       p = integers.clone().into_iter().find(|x| *x > y);
+   }
+   integers
+}
+*/
+// 28 RNA 转录
+/*
+给定 DNA 链,返回其 RNA 补体(每个 RNA 转录).
+
+DNA 和 RNA 链都是核苷酸序列.
+
+DNA 中发现的四个核苷酸是腺嘌呤(A),胞嘧啶(C),鸟嘌呤(G)和胸腺嘧啶(T).
+
+RNA 中发现的四个核苷酸是腺嘌呤(A),胞嘧啶(C),鸟嘌呤(G)和尿嘧啶(T).
+
+给定 DNA 链,其转录的 RNA 链，通过用其互补物替换每个核苷酸而形成:
+
+G- >C
+C- >G
+T- >A
+A- >U
+*/
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+pub enum Nucleotide {
+    Adenine,
+    Cytosine,
+    Guanine,
+    Thymine,
+    Uracil,
+}
+impl Nucleotide {
+    fn from_char(ch: char) -> Option<Nucleotide> {
+        Some(match ch {
+            'A' => Nucleotide::Adenine,
+            'C' => Nucleotide::Cytosine,
+            'G' => Nucleotide::Guanine,
+            'T' => Nucleotide::Thymine,
+            'U' => Nucleotide::Uracil,
+            _ => {
+                return None;    
+            }
+        })
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct DNA(Vec<Nucleotide>);
+impl DNA {
+    pub fn new(input: &str) -> Result<DNA, usize> {
+        let mut out = Vec::new();
+        for (index, ch) in input.chars().enumerate() {
+            match Nucleotide::from_char(ch) {
+                Some(Nucleotide::Uracil) | None  => {
+                    return Err(index);
+                },                                                   
+                Some(n) => {
+                    out.push(n);
+                },
+            }
+        }
+        Ok(DNA(out))
+    }
+    pub fn to_rna(mut self) -> RNA {
+        for nuc in self.0.iter_mut() {
+            *nuc = match *nuc {
+                Nucleotide::Adenine => Nucleotide::Uracil,
+                Nucleotide::Cytosine => Nucleotide::Guanine,
+                Nucleotide::Guanine => Nucleotide::Cytosine,
+                Nucleotide::Thymine => Nucleotide::Adenine,
+                Nucleotide::Uracil => unreachable!(),
+            }
+        }
+        RNA(self.0)
+    }
+}
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct RNA(Vec<Nucleotide>);
+impl RNA {
+    pub fn new(input: &str) -> Result<RNA, usize> {
+        let mut out = Vec::new();
+        for (index, ch) in input.chars().enumerate() {
+            match Nucleotide::from_char(ch) {
+                Some(Nucleotide::Thymine) | None => {
+                    return Err(index);
+                },
+                Some(n) => {
+                    out.push(n);
+                },
+            }
+        }
+        Ok(RNA(out))
+    }
+}
+
+// 29 三角形
+/*
+确定三角形是等边、等腰还是不等边三角形.
+
+一个等边的三角形，三条边都有相同的长度。
+
+一个等腰的三角形，至少两边相同的长度。(有时它被指定为两边长度完全相同,但是为了这个练习的目的，我们的说法是，至少两边。)
+
+一不等边的三角形的两边各有不同的长度。
+*/
+pub struct Triangle {
+    sides: [u64; 3],
+}
+impl Triangle {
+    pub fn build(sides: [u64; 3]) -> Option<Triangle> {
+        if sides[0] + sides[1] > sides[2] &&
+            sides[0] + sides[2] > sides[1] && 
+            sides[1] + sides[2] > sides[0] {
+                Some(Triangle {
+                    sides: sides,
+                })
+            } else {
+                None
+            }
+    }
+    pub fn count(&self) -> i8 {
+        [(0, 1), (0, 2), (1, 2)].iter()
+            .map(|(a, b)| if self.sides.get(*a) == self.sides.get(*b) { 1 } else { 0 })
+            .sum()
+    }
+    pub fn is_equilateral(&self) -> bool {
+        self.count() == 3
+    }
+    pub fn is_scalene(&self) -> bool {
+        self.count() == 0
+    }
+    pub fn is_isosceles(&self) -> bool {
+        self.count() == 1
+    }
+}
+/*
+use std::ops::Add;
+
+pub struct Triangle<T> {
+   sides: [T; 3],
+}
+
+impl<T> Triangle<T>
+where
+   T: Copy + PartialEq + PartialOrd + Add<Output = T> + Default,
+{
+   fn valid_sides(&self) -> bool {
+       (self.sides.iter().all(|&s| s > T::default()))
+           && (self.sides[0] + self.sides[1] >= self.sides[2])
+           && (self.sides[1] + self.sides[2] >= self.sides[0])
+           && (self.sides[2] + self.sides[0] >= self.sides[1])
+   }
+
+   fn count_distinct_pairs(&self) -> usize {
+       [(0, 1), (0, 2), (1, 2)]
+           .iter()
+           .map(|&(a, b)| if self.sides[a] != self.sides[b] { 1 } else { 0 })
+           .sum()
+   }
+
+   pub fn build(sides: [T; 3]) -> Option<Triangle<T>> {
+       let t = Triangle { sides: sides };
+
+       if t.valid_sides() {
+           Some(t)
+       } else {
+           None
+       }
+   }
+
+   pub fn is_equilateral(&self) -> bool {
+       self.count_distinct_pairs() == 0
+   }
+
+   pub fn is_isosceles(&self) -> bool {
+       self.count_distinct_pairs() == 2
+   }
+
+   pub fn is_scalene(&self) -> bool {
+       self.count_distinct_pairs() == 3
+   }
+}
+*/
+
+// 30 罗马数字
+/*
+写一个函数,从普通数字，转换成罗马数字.
+
+罗马人是一群聪明的人。他们征服了欧洲大部分国家,统治了几百年。他们发明了混凝土和直路,甚至 Bikinis 夜店。他们从来没有发现过的一件事就是数字零。这使得写作和约会他们的功绩的广泛历史稍有挑战性，但他们提出的数字系统仍在使用。例如,英国广播公司使用罗马数字制定他们的节目。
+
+罗马人用字母 I（1）、V（5）、X（10）、L（50）、C（100）、D（500）和 M（1000） 写数字(注意这些字母有很多直线,因此很容易侵入石碑)。
+
+
+ 1  => I
+10  => X
+ 7  => VII
+不需要能 转换 超过 3000 的罗马数字
+
+在较大的罗马数字的右边记上较小的罗马数字，表示大数字加小数字。 在较大的罗马数字的左边记上较小的罗马数字，表示大数字减小数字。
+
+要在实践中看到这一点,请考虑 1990 的例子.
+
+在罗马数字中,1990 是 MCMXC:
+
+1000=M 900=CM 90=XC
+
+CM = 1000 - 100 = 900
+
+2008 被写成 MMVIII:
+
+2000=MM 8=Ⅷ
+*/
+use std::fmt;
+
+static ROMAN_MAP: [(usize, &'static str); 13] = [
+   (1, "I"),
+   (4, "IV"),
+   (5, "V"),
+   (9, "IX"),
+   (10, "X"),
+   (40, "XL"),
+   (50, "L"),
+   (90, "XC"),
+   (100, "C"),
+   (400, "CD"),
+   (500, "D"),
+   (900, "CM"),
+   (1000, "M"),
+];
+
+pub struct Roman {
+    num: usize,
+}
+
+impl fmt::Display for Roman {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut out = "".to_string();
+        let mut num = self.num;
+        for &(unit, attr) in ROMAN_MAP.iter().rev() {
+            while num >= unit {
+                out.push_str(attr);
+                num -= unit;
+            }
+        }
+        write!(f, "{}", out)
+    }
+}
+
+impl Roman {
+    pub fn new(num: usize) -> Roman {
+        Roman {
+            num,
+        }
+    }
+}
+
+impl From<usize> for Roman {
+    fn from(i: usize) -> Self {
+        Roman::new(i)
+    }
+}
+// 31 数制转换
+/*
+将一个数字，表示为一个基数中的数字序列，并转为其他基本
+
+实施通用基本转换。给出一个a参数，表示为数字序列，将其转换为基数b。
+
+在位置表示法中，以数字表示b可以被理解为权力的线性组合b.
+
+数字 42，基本为 10，意思是:
+
+(4 * 10^1) + (2 * 10^0)
+
+数字 101010，基本为 2，意思是:
+
+(1 * 2^5) + (0 * 2^4) + (1 * 2^3) + (0 * 2^2) + (1 * 2^1) + (0 * 2^0)
+
+号码 1120，基本为 3，意思是:
+
+(1 * 3^3) + (1 * 3^2) + (2 * 3^1) + (0 * 3^0)
+
+我想你明白了!
+
+是。上面这三个数字完全一样。恭喜!
+*/
+#[derive(Debug, PartialEq)]
+pub enum Error31 {
+    InvalidInputBase,
+    InvalidOutputBase,
+    InvalidDigit(u32),
+}
+pub fn convert(number: &[u32], from_base: u32, to_base: u32) -> Result<Vec<u32>, Error31> {
+    if from_base < 2 {
+        return Err(Error31::InvalidInputBase);
+    }
+    if to_base < 2 {
+        return Err(Error31::InvalidOutputBase);
+    }
+    for n in number {
+        if *n >= from_base {
+            return Err(Error31::InvalidDigit(*n));
+        }
+    }
+    let mut sum = number
+        .into_iter()
+        .rev()
+        .enumerate()
+        .fold(0, |acc, (index, n)| {
+            let n = *n;
+            acc + n * from_base.pow(index as u32)
+        });
+    println!("{}", sum);
+    let mut result = Vec::new();
+    while sum > 0 {
+        result.push(sum % to_base);
+        sum /= to_base;
+        println!("{}", sum);
+    }
+    result.reverse();
+    Ok(result)
+}
+
+// 32 学册
+/*
+根据学生的姓名以及他们所处的年级，为学校创建一个名册.
+
+最后，你应该能够:
+
+将学生的姓名添加到年级名册
+“Add Jim to grade 2.”
+“OK.”
+获取所有注册年级的学生列表
+“哪个学生在二年级?”
+“We’ve only got Jim just now.”
+获取所有年级所有学生的排序列表。年级应分为 1，2，3 级，年级中的学生应按名称按字母顺序排序。
+“谁现在都在学校就读?”
+“Grade 1: Anna, Barb, and Charlie. Grade 2: Alex, Peter, and Zoe. Grade 3…”
+请注意，我们所有学生只有一个名字.(这是一个小镇，你想要什么?)
+*/
+
+pub struct School {
+    grades: HashMap<u32, Vec<String>>,
+}
+
+impl School {
+    pub fn new() -> School {
+        School {
+            grades: HashMap::new(),
+        }
+    }
+
+    pub fn add(&mut self, grade: u32, student: &str) {
+        let students = self.grades.entry(grade).or_insert(vec![]);
+        students.push(student.to_string());
+        students.sort();
+    }
+
+    pub fn grades(&self) -> Vec<u32> {
+        let mut g = self.grades.keys().cloned().collect::<Vec<u32>>();
+        g.sort();
+        g
+    }
+
+    pub fn grade(&self, grade: u32) -> Option<Vec<String>> {
+        self.grades.get(&grade).map(|v| v.iter().cloned().collect())
+    }
+}
+
+// 33 二分查找
+/*
+实现二分查找算法.
+
+搜索已排序的集合是一项常见任务。字典是定义单词的排序列表。有了一个词，就可以找到它的定义。电话簿是人员姓名，地址和电话号码的分类列表。知道某人的姓名可以让他们快速找到他们的电话号码和地址。
+
+如果要搜索的列表包含多个项目(比如十几个)，则二分查找将比线性搜索需要更少的比较，但它强制要求对列表进行排序。
+
+在计算机科学中，二分查找或半间隔搜索算法在按键值排序的数组中，查找指定输入值(搜索”关键字”)的位置。
+
+在每个步骤中，算法将搜索关键字值与数组中间元素的值进行比较。
+
+如果匹配，则找到匹配元素，并返回其索引或位置。
+
+否则，如果搜索关键字小于中间元素的键，则算法在中间元素左侧的子阵列上重复其操作，或者如果搜索关键字更大，则在右侧的子阵列上重复其操作。
+
+如果要搜索的剩余阵列为空，则在阵列中找不到该键值，并返回特殊的”not found”指示。
+
+二分查找将每次迭代检查的项目数减半，因此定位项目(或确定其不存在)需要对数时间。二分搜索是一种对半分，并渐进的搜索算法。
+*/
+pub fn find(array: &[i32], key: i32) -> Option<usize> {
+    let mut a = 0;
+    let mut b = array.len();
+    if array.is_empty() {
+        return None;
+    }
+    if array[a] == key {
+        return Some(a);
+    }
+    if array[b-1] == key {
+        return Some(b-1);
+    }
+    let mut m = b -  a;
+    while m > 1 {
+        let x = a + m / 2;
+        println!("{}, {}, {:?}", a, b, array[x]);
+        if array[x] == key {
+            return Some(x);
+        } else if array[x] > key {
+            b = x;
+        } else {
+            a = x;
+        }
+        m = b - a;
+    }
+    None
+}
+
+// 34 机器人模拟器
+/*
+编写机器人模拟器。
+
+机器人工厂的测试设施需要一个程序，来验证机器人的运动。
+
+机器人有三种可能的运动:
+
+右转
+左转
+前进
+机器人被放置在一个假设的无限网格上，以一组{x，y}坐标，例如{3，8}面向特定方向(北、东、南或西)，能向北和东前进。
+
+然后，机器人接收许多指令，测试设备验证机器人的新位置以及指向哪个方向。
+
+字母串”RAALAR”的意思是:
+右转
+前两次
+向左拐
+前一次
+再次左转
+假设一个机器人从{ 7， 3 }向北开始，然后运行这个指令流，它应该就放在面向西方的{ 9, 4 }上。
+*/
+#[derive(PartialEq, Debug, Clone)]
+pub enum Direction {
+    North,
+    East,
+    South,
+    West,
+}
+#[derive(Debug, Clone)]
+pub struct Robot {
+    position: (i32, i32),
+    direction: Direction,
+}
+impl Robot {
+    pub fn new(x: i32, y: i32, d: Direction) -> Self {
+        Robot::build(x, y, d)
+    }
+    pub fn build(x: i32, y: i32, d: Direction) -> Self {
+        Robot {
+            position: (x, y),
+            direction: d,
+        }
+    }
+    pub fn turn_right(self) -> Self {
+        match self.direction {
+            Direction::North => {
+                Robot::build(self.position.0, self.position.1, Direction::East)
+            },
+            Direction::East => {
+                Robot::build(self.position.0, self.position.1, Direction::South)
+            },
+            Direction::South => {
+                Robot::build(self.position.0, self.position.1, Direction::West)
+            },
+            Direction::West => {
+                Robot::build(self.position.0, self.position.1, Direction::North)
+            },
+        }
+    }
+    pub fn turn_left(self) -> Self {
+        match self.direction {
+            Direction::North => {
+                Robot::build(self.position.0, self.position.1, Direction::West)
+            },
+            Direction::East => {
+                Robot::build(self.position.0, self.position.1, Direction::North)
+            },
+            Direction::South => {
+                Robot::build(self.position.0, self.position.1, Direction::East)
+            },
+            Direction::West => {
+                Robot::build(self.position.0, self.position.1, Direction::South)
+            },
+        }
+    }
+    pub fn advance(self) -> Self {
+        match self.direction {
+            Direction::North => {
+                Robot::build(self.position.0, self.position.1 + 1, self.direction)
+            },
+            Direction::East => {
+                Robot::build(self.position.0 + 1, self.position.1, self.direction)
+            },
+            Direction::South => {
+                Robot::build(self.position.0, self.position.1 - 1, self.direction)
+            },
+            Direction::West => {
+                Robot::build(self.position.0 - 1, self.position.1, self.direction)
+            },
+        }
+    }
+    pub fn instructions(self, instructions: &str) -> Self {
+        instructions
+            .chars()
+            .fold(self.clone(), |robot, instruction| {
+                match instruction {
+                    'R' => robot.turn_right(),
+                    'L' => robot.turn_left(),
+                    'A' => robot.advance(),
+                    _ => robot,
+                }
+            })
+    }
+    pub fn position(&self) -> (i32, i32) {
+        self.position
+    }
+    pub fn direction(&self) -> &Direction {
+        &self.direction
+    }
+}
+/*
+#[derive(PartialEq, Debug, Copy, Clone)]
+pub enum Direction {
+   North,
+   East,
+   South,
+   West,
+}
+
+impl Direction {
+   pub fn previous_clockwise(&self) -> Self {
+       match *self {
+           Direction::North => Direction::West,
+           Direction::East => Direction::North,
+           Direction::South => Direction::East,
+           Direction::West => Direction::South,
+       }
+   }
+
+   pub fn next_clockwise(&self) -> Self {
+       match *self {
+           Direction::North => Direction::East,
+           Direction::East => Direction::South,
+           Direction::South => Direction::West,
+           Direction::West => Direction::North,
+       }
+   }
+}
+
+#[derive(Clone, Copy)]
+struct Position {
+   x: i32,
+   y: i32,
+}
+
+impl Position {
+   fn new(x: i32, y: i32) -> Self {
+       Position { x: x, y: y }
+   }
+
+   fn advance(&self, direction: &Direction) -> Self {
+       match *direction {
+           Direction::North => Self::new(self.x, self.y + 1),
+           Direction::South => Self::new(self.x, self.y - 1),
+           Direction::East => Self::new(self.x + 1, self.y),
+           Direction::West => Self::new(self.x - 1, self.y),
+       }
+   }
+}
+
+#[derive(Clone)]
+pub struct Robot {
+   position: Position,
+   direction: Direction,
+}
+
+impl Robot {
+   pub fn new(x: i32, y: i32, d: Direction) -> Self {
+       Robot::build(Position::new(x, y), d)
+   }
+
+   fn build(position: Position, direction: Direction) -> Self {
+       Robot {
+           position: position,
+           direction: direction,
+       }
+   }
+
+   pub fn turn_right(&self) -> Self {
+       Self::build(self.position, self.direction.next_clockwise())
+   }
+
+   pub fn turn_left(&self) -> Self {
+       Self::build(self.position, self.direction.previous_clockwise())
+   }
+
+   pub fn advance(&self) -> Self {
+       Self::build(self.position.advance(&self.direction), self.direction)
+   }
+
+   pub fn instructions(&self, instructions: &str) -> Self {
+       instructions
+           .chars()
+           .fold(self.clone(), |robot, instruction| {
+               robot.execute(instruction)
+           })
+   }
+
+   pub fn position(&self) -> (i32, i32) {
+       (self.position.x, self.position.y)
+   }
+
+   pub fn direction(&self) -> &Direction {
+       &self.direction
+   }
+
+   fn execute(self, command: char) -> Self {
+       match command {
+           'R' => self.turn_right(),
+           'L' => self.turn_left(),
+           'A' => self.advance(),
+           _ => self,
+       }
+   }
+}
+*/
+
+// 35 括号配套
+/*
+给定包含括号[]大括号{}括号()或它们的任何组合的字符串，验证任何和所有对，都被正确地匹配和嵌套
+*/
+pub fn brackets_are_balanced(string: &str) -> bool {
+    let mut brackets = vec![' '];
+    for c in string.chars() {
+        match c {
+            '{' | '[' | '(' => { brackets.push(c);},
+            '}' => {
+                if *brackets.last().unwrap() == '{' {
+                    brackets.pop();
+                } else {
+                    return false;
+                }},
+            ']' => {
+                if *brackets.last().unwrap() == '[' {
+                    brackets.pop();
+                } else {
+                    return false;
+                }},
+            ')' => {
+                if *brackets.last().unwrap() == '(' {
+                    brackets.pop();
+                } else {
+                    return false;
+                }},
+            _ => {},
+        }
+    }
+    brackets.len() == 1
+}
+/*
+use std::collections::HashMap;
+
+pub fn brackets_are_balanced(string: &str) -> bool {
+   Brackets::from(string).are_balanced()
+}
+
+struct Brackets {
+   raw_brackets: Vec<char>,
+   pairs: MatchingBrackets,
+}
+
+impl<'a> From<&'a str> for Brackets {
+   fn from(i: &str) -> Self {
+       Brackets::new(String::from(i), None)
+   }
+}
+
+impl Brackets {
+   fn new(s: String, pairs: Option<Vec<(char, char)>>) -> Self {
+       let p = match pairs {
+           Some(x) => MatchingBrackets::from(x),
+           None => MatchingBrackets::from(vec![('[', ']'), ('{', '}'), ('(', ')')]),
+       };
+
+       Brackets {
+           raw_brackets: s.chars().filter(|c| p.contains(&c)).collect::<Vec<char>>(),
+           pairs: p,
+       }
+   }
+
+   fn are_balanced(&self) -> bool {
+       let mut unclosed: Vec<char> = Vec::new();
+
+       for &bracket in self.raw_brackets.iter() {
+           if let Some(last_unclosed) = unclosed.pop() {
+               unclosed.extend(self.pairs.unmatched(last_unclosed, bracket));
+           } else {
+               unclosed.push(bracket);
+           }
+       }
+
+       unclosed.is_empty()
+   }
+}
+
+struct MatchingBrackets {
+   collection: HashMap<char, char>,
+}
+
+impl From<Vec<(char, char)>> for MatchingBrackets {
+   fn from(v: Vec<(char, char)>) -> Self {
+       MatchingBrackets {
+           collection: v.into_iter().collect::<HashMap<char, char>>(),
+       }
+   }
+}
+
+impl MatchingBrackets {
+   fn contains(&self, other: &char) -> bool {
+       let known = self.collection
+           .keys()
+           .chain(self.collection.values())
+           .collect::<Vec<_>>();
+       known.contains(&other)
+   }
+
+   fn closer_for(&self, k: &char) -> Option<&char> {
+       self.collection.get(k)
+   }
+
+   fn closed_by(&self, l: char, r: char) -> bool {
+       match self.closer_for(&l) {
+           Some(&x) => r == x,
+           None => false,
+       }
+   }
+
+   fn unmatched(&self, open: char, potential_close: char) -> Vec<char> {
+       let mut ret: Vec<char> = Vec::new();
+
+       if !self.closed_by(open, potential_close) {
+           ret.push(open);
+           ret.push(potential_close);
+       }
+
+       ret
+   }
+}
+*/
+
+// 37 皇后攻击
+/*
+给定棋盘上的两个皇后的位置，指示在各自位置的它们，是否能互相攻击。
+
+在象棋游戏中，女王可以攻击同一行、列或对角线上的棋子。
+
+棋盘可以用 8 乘 8 的数组来表示。
+
+所以如果你告诉白皇后在(2， 3)和黑皇后在(5， 6)，那么设定像这样:
+
+
+_ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _
+_ _ _ W _ _ _ _
+_ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _
+_ _ _ _ _ _ B _
+_ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _
+你也可以回答女王是否可以互相攻击。而在这种情况下，答案是肯定的，他们可以，因为这两个部分共用一个对角线。
+*/
+#[derive(Debug)]
+pub struct ChessPosition {
+    x: i32,
+    y: i32,
+}
+
+#[derive(Debug)]
+pub struct Queen {
+    position: ChessPosition,
+}
+
+impl ChessPosition {
+    pub fn new(rank: i32, file: i32) -> Option<Self> {
+        if rank >= 0 && rank < 8 && file >= 0 && file < 8 {
+            Some(ChessPosition {
+                x: rank,
+                y: file,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+impl Queen {
+    pub fn new(position: ChessPosition) -> Self {
+        Queen {
+            position,
+        }
+    }
+
+    pub fn can_attack(&self, other: &Queen) -> bool {
+        let (x, y) = (self.position.x, self.position.y);
+        let (other_x, other_y) = (other.position.x, other.position.y);
+        if x == other_x || y == other_y || (x-other_x).abs() == (y-other_y).abs() {
+            true
+        } else {
+            false
+        }
+    }
+}
+/*
+#[derive(Debug)]
+pub struct Queen {
+   position: ChessPosition,
+}
+
+pub trait ChessPiece {
+   fn position(&self) -> &ChessPosition;
+   fn can_attack<T: ChessPiece>(&self, other: &T) -> bool;
+}
+
+impl ChessPiece for Queen {
+   fn position(&self) -> &ChessPosition {
+       &self.position
+   }
+
+   fn can_attack<T: ChessPiece>(&self, piece: &T) -> bool {
+       self.position.horizontal_from(&piece.position())
+           || self.position.vertical_from(&piece.position())
+           || self.position.diagonal_from(&piece.position())
+   }
+}
+
+impl Queen {
+   pub fn new(position: ChessPosition) -> Queen {
+       Queen { position: position }
+   }
+}
+
+#[derive(Debug)]
+pub struct ChessPosition {
+   pub rank: i8,
+   pub file: i8,
+}
+
+impl ChessPosition {
+   pub fn new(rank: i8, file: i8) -> Option<Self> {
+       let position = ChessPosition {
+           rank: rank,
+           file: file,
+       };
+
+       if position.is_valid() {
+           Some(position)
+       } else {
+           None
+       }
+   }
+
+   fn is_valid(&self) -> bool {
+       self.rank >= 0 && self.rank <= 7 && self.file >= 0 && self.file <= 7
+   }
+
+   fn horizontal_from(&self, other: &ChessPosition) -> bool {
+       self.rank == other.rank
+   }
+
+   fn vertical_from(&self, other: &ChessPosition) -> bool {
+       self.file == other.file
+   }
+
+   fn diagonal_from(&self, other: &ChessPosition) -> bool {
+       self.sum() == other.sum() || self.difference() == other.difference()
+   }
+
+   fn sum(&self) -> i8 {
+       self.rank + self.file
+   }
+
+   fn difference(&self) -> i8 {
+       self.rank - self.file
+   }
+}
+*/
+
+// 39 子列表
+/*
+给定两个列表确定第一个列表是否包含在第二个列表中；第二个列表是否包含在第一个列表中；两个列表是否包含在彼此，或者这些都不是真的。
+
+具体来说，列表 A 是列表 B 的子列表，在于是否 B 的前面删除 0 个或更多元素和 B 的后面删除 0 个或更多元素，则得到完全等于 A 的列表。
+
+例子:
+
+A = [1,2,3]，B = [1,2,3,4,5]，A 是 B 的子列表
+A = [3,4,5]，B = [1,2,3,4,5]，A 是 B 的子列表
+A = [3,4]，B = [1,2,3,4,5]，A 是 B 的子列表
+A = [1,2,3]，B = [1,2,3]，A 等于 B。
+A = [1,2,3,4,5]，B = [2,3,4]，A 是 B 的父列表
+A = [1,2,4]，B = [1,2,3,4,5]，A 不是 B 的父列表，子列表，或等于 B 的列表
+*/
+#[derive(Debug, PartialEq)]
+pub enum Comparison {
+    Equal,
+    Sublist,
+    Superlist,
+    Unequal,
+}
+
+pub fn sublist<T: PartialEq>(first_list: &[T], second_list: &[T]) -> Comparison {
+    if first_list == second_list {
+        Comparison::Equal
+    } else if compare(first_list, second_list) {
+        Comparison::Sublist
+    } else if compare(second_list, first_list) {
+        Comparison::Superlist
+    } else {
+        Comparison::Unequal
+    }
+}
+
+pub fn compare<T: PartialEq>(short: &[T], long: &[T]) -> bool {
+    if short.len() > long.len() {
+        return false;
+    }
+    if long.starts_with(short) {
+        return true;
+    }
+
+    compare(short, &long[1..])
+}
+
+// 41 地球年
+/*
+给定年龄(以秒为单位)，计算某人的年龄:
+
+地球：轨道周期 365.25 地球日,或 31557600 秒
+水星：轨道周期 0.2408467 地球年
+金星：轨道周期 0.61519726 地球年
+火星：轨道周期 1.8808158 地球年
+木星：轨道周期 11.862615 地球年
+土星：轨道周期 29.447498 地球年
+天王星：轨道周期 84.016846 地球年
+海王星：轨道周期 164.79132 地球年
+因此，如果你被告知某人的年龄为 1,000,000,000 秒，你应该可以说它们的年龄为 31.69 地球年.
+*/
+#[derive(Debug)]
+pub struct Duration {
+    seconds: f64,
+}
+
+impl From<u64> for Duration {
+    fn from(s: u64) -> Self {
+        Duration {
+            seconds: s as f64,
+        }
+    }
+}
+
+impl From<f64> for Duration {
+    fn from(s: f64) -> Self {
+        Duration {
+            seconds: s,
+        }
+    }
+}
+
+pub trait Planet {
+    fn trans_duration() -> Duration;
+    fn years_during(d: &Duration) -> f64 {
+        d.seconds / Self::trans_duration().seconds
+    }
+}
+
+pub struct Mercury;
+pub struct Venus;
+pub struct Earth;
+pub struct Mars;
+pub struct Jupiter;
+pub struct Saturn;
+pub struct Uranus;
+pub struct Neptune;
+
+impl Planet for Mercury {
+    fn trans_duration() -> Duration {
+        Duration::from(7600543.81992)
+    }
+}
+
+impl Planet for Venus {
+    fn trans_duration() -> Duration {
+        Duration::from(19414149.052176)
+    }
+}
+
+impl Planet for Earth {
+    fn trans_duration() -> Duration {
+        Duration::from(31557600)
+    }
+}
+
+impl Planet for Mars {
+    fn trans_duration() -> Duration {
+        Duration::from(59354032.69008)
+    }
+}
+
+impl Planet for Jupiter {
+    fn trans_duration() -> Duration {
+        Duration::from(374355659.124)
+    }
+}
+
+impl Planet for Saturn {
+    fn trans_duration() -> Duration {
+        Duration::from(929292362.8848)
+    }
+}
+
+impl Planet for Uranus {
+    fn trans_duration() -> Duration {
+        Duration::from(2651370019.3296)
+    }
+}
+
+impl Planet for Neptune {
+    fn trans_duration() -> Duration {
+        Duration::from(5200418560.032)
+    }
+}
+
+// 42 宏
+/*
+宏是 Rust 程序员工具箱中的一个强大工具，要想对它有个简单认知，可以看看宏例子。让我们写一个!
+
+问题陈述
+你可以用vec![]内联宏，生产一个任意长度的Vec。然而,Rust 并没有生产HashMap的内联宏hashmap!()。
+
+例如，您的库的用户可能会编写hashmap!('a' => 3, 'b' => 11, 'z' => 32)。这应该扩展到以下代码:
+
+
+
+{
+   let mut hm = HashMap::new();
+   hm.insert('a', 3);
+   hm.insert('b', 11);
+   hm.insert('z', 32);
+   hm
+}
+*/
+#[macro_export]
+macro_rules! hashmap {
+    ($($key: expr => $value: expr),* $(,)*) => {
+       {
+          let mut _map = ::std::collections::HashMap::new();
+          $(
+             _map.insert($key, $value);
+          )*
+          _map
+       }
+    };
+ }
+
+// 43 过敏源
+/*
+给出一个人的过敏分，确定他们是否对某一物品过敏，以及他们的过敏列表.
+
+过敏测试产生单个数字分数，其中包含有关该人所有过敏的信息(他们进行了测试)。
+
+测试的物品列表(及其值)为:
+
+鸡蛋(1)
+花生(2)
+贝类(4)
+草莓(8)
+西红柿(16)
+巧克力(32)
+花粉(64)
+猫(128)
+因此，如果汤姆对花生和巧克力过敏，他会得到 34 分.
+
+现在，只要得到 34 分，你的程序应该说:
+
+汤姆是否对上面列出的任何一种过敏原过敏.
+汤姆所有过敏原。
+注意：给出的分数可能不包括上面列出的过敏原(即分数为 256，512，1024 等的过敏原)。您的程序应忽略这些组成部分。例如，如果过敏分数是 257，您的程序应该只报告鸡蛋(1)过敏
+*/
+pub struct Allergies(u32);
+
+#[derive(Debug, PartialEq)]
+pub enum Allergen {
+    Eggs,
+    Peanuts,
+    Shellfish,
+    Strawberries,
+    Tomatoes,
+    Chocolate,
+    Pollen,
+    Cats,
+}
+
+impl Allergies {
+    pub fn new(score: u32) -> Self {
+        Allergies(score)
+    }
+    pub fn is_allergic_to(&self, allergen: &Allergen) -> bool {
+        let index = Allergies::allergen()
+            .iter()
+            .position(|a| a == allergen)
+            .unwrap();
+        self.0 & 1 << index as u32 != 0
+    }
+    pub fn allergies(&self) -> Vec<Allergen> {
+        Allergies::allergen()
+            .into_iter()
+            .filter(|a| self.is_allergic_to(a))
+            .collect()
+    }
+    fn allergen() -> Vec<Allergen> {
+        vec![
+            Allergen::Eggs,
+            Allergen::Peanuts,
+            Allergen::Shellfish,
+            Allergen::Strawberries,
+            Allergen::Tomatoes,
+            Allergen::Chocolate,
+            Allergen::Pollen,
+            Allergen::Cats,
+        ]
+    }
+}
+
+// 44 可变长度数量
+/*
+实现可变长度数量编码和解码.
+
+这项工作的目标是实现VLQ的编码/解码。
+
+简而言之，此编码的目标是以节省字节的方式，对整数值进行编码。只有每个字节的前 7 位是有效的(右对齐；有点像 ASCII 字节)。因此，如果您有 32 位值，则必须解开为一系列 7 位字节。当然，根据您的整数，您将拥有可变数量的字节。要指出哪个是系列的最后一个字节，请将 #7 位清零。而所有前面的字节中，您都要设置#7 位。
+
+所以，如果一个整数介于0-127，它可以表示为一个字节。虽然 VLQ 可以处理任意大小的数字，但对于本练习，我们将仅限于适合 32 位无符号整数的数字。以下是整数作为 32 位值的示例，以及它们转换为的可变长度数量:
+
+
+ NUMBER        VARIABLE QUANTITY
+00000000              00
+00000040              40
+0000007F              7F
+00000080             81 00
+00002000             C0 00
+00003FFF             FF 7F
+00004000           81 80 00
+00100000           C0 80 00
+001FFFFF           FF FF 7F
+00200000          81 80 80 00
+08000000          C0 80 80 00
+0FFFFFFF          FF FF FF 7F
+*/
+#[derive(Debug, PartialEq)]
+pub enum Error44 {
+    IncompleteNumber,
+    Overflow,
+}
+
+pub fn to_bytes(values: &[u32]) -> Vec<u8> {
+    let mut result = vec![];
+    let mut temp;
+    for value in values {
+        let mut value = *value;
+        temp = Vec::with_capacity(4);
+        if value == 0 {
+            temp = vec![0];
+        } else {
+            while value > 0 {
+                let mut v = (value & 0x7f) as u8;
+                if !temp.is_empty() {
+                    v |= 0x80;
+                }
+                temp.push(v);
+                value >>= 7;
+            }
+        }
+        temp.reverse();
+        result.append(& mut temp);
+    }
+    result
+}
+
+pub fn from_bytes(bytes: &[u8]) -> Result<Vec<u32>, Error44> {
+    let mut result = vec![];
+    let mut temp: u32 = 0;
+    for (i, v) in bytes.iter().enumerate() {
+        if temp & 0xfe_00_00_00 > 0 {
+            return Err(Error44::Overflow);
+        }
+        temp = (temp << 7) | (v & 0x7f) as u32;
+        if v & 0x80 == 0 {
+            result.push(temp);
+            temp = 0;
+        } else {
+            if i + 1 == bytes.len() {
+                return Err(Error44::IncompleteNumber);
+            }
+        }
+    }
+    Ok(result)
+}
+
+// 45 电话号码
+/*
+整理用户输入的电话号码，以便他们可以发送短信.
+
+这个**北美编号计划(NANP)**是北美洲、加拿大或百慕大群岛等许多国家使用的电话号码系统。所有 NANP 国家共享相同的国际国家代码:1。
+
+NANP 数字是十位数字，由三位编号——区域划分代码组成，俗称地区代码其次是一个七位数的本地号码。本地号码的前三位数字表示交换码，剩余是唯一的四位数字，这是用户号码。
+
+格式通常表示为
+
+
+(NXX)-NXX-XXXX
+这里的N是从 2 到 9 的任何数字，而X是从 0 到 9 的任何数字.
+
+您的任务是通过删除标点符号和国家代码(1)，整理不同格式的电话号码。
+
+例如，输入
+
++1 (613)-995-0253
+613-995-0253
+1 613 995 0253
+613.995.0253
+都应该产出
+
+6139950253
+
+**注:**因为这个练习只涉及 NANP 国家使用的电话号码，只有 1 被认为是有效的国家代码
+*/
+pub fn number(user_number: &str) -> Option<String> {
+    let number = user_number
+        .chars()
+        .filter(|c| c.is_ascii_digit())
+        .collect::<Vec<char>>();
+    let is_valid = |s: &[char]| {
+        s[0] > '1' && s[0] <= '9' && s[3] > '1' && s[3] <= '9'
+    };
+    if number.len() == 11 && number[0] == '1' && is_valid(&number[1..]) {
+        return Some(number[1..].iter().collect::<String>());
+    }
+    if number.len() == 10 && is_valid(&number) {
+        return Some(number.iter().collect::<String>());
+    }
+    None
+}
+/*
+pub fn number(s: &str) -> Option<String> {
+    let digits: String = s.chars().filter(|&c| c.is_digit(10)).collect();
+    match digits.len() {
+        10 => match (digits.chars().nth(0), digits.chars().nth(3)) {
+            (Some('0'), _) => None,
+            (Some('1'), _) => None,
+            (_, Some('0')) => None,
+            (_, Some('1')) => None,
+            _ => Some(digits),
+        },
+        11 => match digits.chars().nth(0) {
+            Some('1') => number(&digits[1..]),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+*/
+
+// 46 计算
+/*
+解析并运算简单的数学单词问题，将答案作为整数返回。
+
+迭代 1 - 加法
+将两个数字相加
+
+What is 5 plus 13?
+
+运算为 18.
+
+处理大数和负数。
+
+迭代 2 - 减法，乘法和除法
+现在，执行其他三个操作.
+
+What is 7 minus 5?
+
+2
+
+What is 6 multiplied by 4?
+
+24
+
+What is 25 divided by 5?
+
+五
+
+迭代 3 - 多个操作
+按顺序处理一组操作.
+
+由于这些是口头语言问题，从左到右运算表达式，忽略了典型的操作顺序(乘法优先级比加法高)。
+
+What is 5 plus 13 plus 6?
+
+24
+
+What is 3 plus 2 multiplied by 3?
+
+15(不是 9)
+*/
+#[derive(Debug)]
+pub struct WordProblem {
+    op: Vec<char>,
+    d: Vec<i32>,
+}
+impl WordProblem {
+    pub fn new(command: &str) -> Self {
+        let mut op = vec![];
+        let mut d = vec![];
+        for s in command
+                    .trim_end_matches(|c| c == '?')
+                    .split_ascii_whitespace() {
+            match s {
+                "plus" => op.push('+'),
+                "multiplied"  => op.push('*'),
+                "minus"  => op.push('-'),
+                "divided" => op.push('/'),
+                s if s.chars().nth(0).unwrap().is_ascii_digit() => {
+                    d.push(s.chars()
+                        .rev()
+                        .enumerate()
+                        .map(|(i, c)|
+                            c.to_digit(10).unwrap() * 10_u32.pow(i as u32))
+                        .sum::<u32>() as i32);
+                },
+                s if s.chars().nth(0).unwrap() == '-' => {
+                    let temp = s[1..].chars()
+                        .rev()
+                        .enumerate()
+                        .map(|(i, c)|
+                            c.to_digit(10).unwrap() * 10_u32.pow(i as u32))
+                        .sum::<u32>() as i32;
+                    d.push(temp - 2 * temp);
+                },
+                _ => {},
+            }
+        }
+        WordProblem {
+            op,
+            d,
+        }
+    }
+    pub fn compute(&self) -> Option<i32> {
+        if self.op.is_empty() {
+            return None;
+        }
+        let mut res = self.d[0];
+        for (i, s) in self.op.iter().enumerate() {
+            let temp = self.d[i+1];
+            match s {
+                '+' => res += temp,
+                '-' => res -= temp,
+                '*' => res *= temp,
+                '/' => res /= temp,
+                _ => {},
+        }
+        }
+        Some(res)
+    }
+}
+
+pub fn answer(command: &str) -> Option<i32> {
+    WordProblem::new(command).compute()
+}
+/*
+struct Token<'a> {
+   value: &'a str,
+}
+
+impl <'a> Token<'a> {
+   fn is_valid(&self) -> bool {
+       !self.value.is_empty() && (self.is_operand() || self.is_operator())
+   }
+
+   fn is_operand(&self) -> bool {
+       self.value.chars().all(|c| c.is_numeric() || c == '-')
+   }
+
+   fn is_operator(&self) -> bool {
+       self.value == "plus"
+           || self.value == "minus"
+           || self.value == "multiplied"
+           || self.value == "divided"
+   }
+}
+
+pub fn answer(c: &str) -> Option<i32> {
+   let mut t = tokens(c);
+   let mut result: i32 = 0;
+   let mut opr = "plus";
+
+   if t.len() <= 1 {
+       None
+   } else {
+       while t.len() > 1 {
+           result = evaluate(result, opr, operand(&t.remove(0)));
+           opr = operator(&t.remove(0));
+       }
+       result = evaluate(result, opr, operand(&t.remove(0)));
+       Some(result)
+   }
+}
+
+fn evaluate(r: i32, operator: &str, operand: i32) -> i32 {
+   match operator {
+       "plus" => r + operand,
+       "minus" => r - operand,
+       "multiplied" => r * operand,
+       "divided" => r / operand,
+       _ => r,
+   }
+}
+
+fn operand(t: &Token) -> i32 {
+   t.value.parse().unwrap()
+}
+
+fn operator<'a>(t: &Token<'a>) -> &'a str {
+   t.value
+}
+
+fn tokens<'a>(command: &'a str) -> Vec<Token<'a>> {
+   command
+       .split(|c: char| c.is_whitespace() || c == '?')
+       .map(|w| Token {
+           value: w,
+       })
+       .filter(|t| t.is_valid())
+       .collect()
+}
+*/
+
+// 47 足球比赛记录
+/*
+统计一场小型足球比赛的结果.
+
+基于一个输入文件，它包含哪个队与哪个队进行比赛，结果是什么。用下面的表格创建出一个文件:
+
+
+Team                           | MP |  W |  D |  L |  P
+Devastating Donkeys            |  3 |  2 |  1 |  0 |  7
+Allegoric Alaskans             |  3 |  2 |  0 |  1 |  6
+Blithering Badgers             |  3 |  1 |  0 |  2 |  3
+Courageous Californians        |  3 |  0 |  1 |  2 |  1
+那些缩写是什么意思?
+
+MP：赛次
+W：比赛赢了
+D：打平
+L：比赛输了
+P：分
+一场胜利，3 分。打平 1 分。输了 0 分.
+
+结果应该按分数下降排序。在平局的情况下，球队按字母顺序排列。
+
+输入
+你的梳理程序，将接收像这样的输入:
+
+
+Allegoric Alaskans;Blithering Badgers;win
+Devastating Donkeys;Courageous Californians;draw
+Devastating Donkeys;Allegoric Alaskans;win
+Courageous Californians;Blithering Badgers;loss
+Blithering Badgers;Devastating Donkeys;loss
+Allegoric Alaskans;Courageous Californians;win
+一行中首个队伍名是主队。所以这一行
+
+
+Allegoric Alaskans;Blithering Badgers;win
+意味着，Allegoric Alaskans 打败了 Blithering Badgers。
+
+这行:
+
+
+Courageous Californians;Blithering Badgers;loss
+意味着，Courageous Californians 输给了 Blithering Badgers
+
+这行:
+
+
+Devastating Donkeys;Courageous Californians;draw
+意味着，Devastating Donkeys 与 Courageous Californians 打平
+*/
+use std::cmp::Ordering::Equal;
+
+pub struct FootballGame {
+    record: HashMap<String, Vec<u32>>,
+}
+impl FootballGame {
+    pub fn new(input: &str) -> Self {
+        if input.is_empty() {
+            let mut res = HashMap::new();
+            res.insert("".to_string(), vec![]);
+            return FootballGame {
+                record: res,
+            };
+        }
+        let mut res = HashMap::new();
+        let competes = input.split(|c| c == '\n').collect::<Vec<&str>>();
+        for compete in competes {
+            let temp = compete.split(|c| c == ';').collect::<Vec<&str>>();
+            let first = res
+                .entry(temp[0].to_string())
+                .or_insert(vec![0, 0, 0, 0, 0]);
+            first[0] += 1;
+            match temp[2] {
+                "win" => {
+                    first[1] += 1;
+                    first[4] += 3;
+                }
+                "draw" => {
+                    first[2] += 1;
+                    first[4] += 1;
+                }
+                "loss" => {
+                    first[3] += 1;
+                }
+                _ => {}
+            }
+            let second = res
+                .entry(temp[1].to_string())
+                .or_insert(vec![0, 0, 0, 0, 0]);
+            second[0] += 1;
+            match temp[2] {
+                "loss" => {
+                    second[1] += 1;
+                    second[4] += 3;
+                }
+                "draw" => {
+                    second[2] += 1;
+                    second[4] += 1;
+                }
+                "win" => second[3] += 1,
+                _ => {}
+            }
+        }
+        FootballGame { record: res }
+    }
+    pub fn show(&self) -> String {
+        if self.record.contains_key("") {
+            return format!("{:30} | MP |  W |  D |  L |  P", "Team");
+        }
+        let mut v: Vec<_> = self.record
+            .iter()
+            .map(|(team, r)| {
+                (team, r[0], r[1], r[2], r[3], r[4])
+            })
+            .collect();
+            v.sort_by(|a, b| match b.5.cmp(&(a.5)) {
+                Equal=> a.0.cmp(&(b.0)),
+                other=> other,
+            });
+        let mut res = vec![format!("{:30} | MP |  W |  D |  L |  P", "Team")];
+        for (team, mp, w, d, l, p) in v {
+            res.push(format!(
+                "{:30} | {:2} | {:2} | {:2} | {:2} | {:2}",
+                team, mp, w, d, l, p
+            ));
+        }
+        res.join("\n")
+    }
+}
+
+pub fn tally(input: &str) -> String {
+    FootballGame::new(input).show()
+}
+

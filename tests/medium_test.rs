@@ -2322,3 +2322,1979 @@ fn hyphenated() {
        "CMOS"
    );
 }
+
+// 27
+#[test]
+fn limit_lower_than_the_first_prime() {
+   assert_eq!(primes_up_to(1), []);
+}
+
+#[test]
+//#[ignore]
+fn limit_is_the_first_prime() {
+   assert_eq!(primes_up_to(2), [2]);
+}
+
+#[test]
+//#[ignore]
+fn primes_up_to_10() {
+   assert_eq!(primes_up_to(10), [2, 3, 5, 7]);
+}
+
+#[test]
+//#[ignore]
+fn limit_is_prime() {
+   assert_eq!(primes_up_to(13), [2, 3, 5, 7, 11, 13]);
+}
+
+#[test]
+//#[ignore]
+fn limit_of_1000() {
+   let expected = vec![
+       2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89,
+       97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181,
+       191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281,
+       283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397,
+       401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503,
+       509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619,
+       631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743,
+       751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863,
+       877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997,
+   ];
+   assert_eq!(primes_up_to(1000), expected);
+}
+
+// 28
+#[test]
+fn test_valid_dna_input() {
+   assert!(DNA::new("GCTA").is_ok());
+}
+
+#[test]
+//#[ignore]
+fn test_valid_rna_input() {
+   assert!(RNA::new("CGAU").is_ok());
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_dna_input() {
+   // Invalid character
+   assert_eq!(DNA::new("X").err(), Some(0));
+   // Valid nucleotide, but invalid in context
+   assert_eq!(DNA::new("U").err(), Some(0));
+   // Longer string with contained errors
+   assert_eq!(DNA::new("ACGTUXXCTTAA").err(), Some(4));
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_rna_input() {
+   // Invalid character
+   assert!(RNA::new("X").is_err());
+   // Valid nucleotide, but invalid in context
+   assert!(RNA::new("T").is_err());
+   // Longer string with contained errors
+   assert!(RNA::new("ACGUTTXCUUAA").is_err());
+}
+
+#[test]
+//#[ignore]
+fn test_acid_equals_acid() {
+   assert_eq!(DNA::new("CGA").unwrap(), DNA::new("CGA").unwrap());
+   assert_ne!(DNA::new("CGA").unwrap(), DNA::new("AGC").unwrap());
+   assert_eq!(RNA::new("CGA").unwrap(), RNA::new("CGA").unwrap());
+   assert_ne!(RNA::new("CGA").unwrap(), RNA::new("AGC").unwrap());
+}
+
+#[test]
+//#[ignore]
+fn test_transcribes_cytosine_guanine() {
+   assert_eq!(RNA::new("G").unwrap(), DNA::new("C").unwrap().to_rna());
+}
+
+#[test]
+//#[ignore]
+fn test_transcribes_guanine_cytosine() {
+   assert_eq!(RNA::new("C").unwrap(), DNA::new("G").unwrap().to_rna());
+}
+
+#[test]
+//#[ignore]
+fn test_transcribes_adenine_uracil() {
+   assert_eq!(RNA::new("U").unwrap(), DNA::new("A").unwrap().to_rna());
+}
+
+#[test]
+//#[ignore]
+fn test_transcribes_thymine_to_adenine() {
+   assert_eq!(RNA::new("A").unwrap(), DNA::new("T").unwrap().to_rna());
+}
+
+#[test]
+//#[ignore]
+fn test_transcribes_all_dna_to_rna() {
+   assert_eq!(
+       RNA::new("UGCACCAGAAUU").unwrap(),
+       DNA::new("ACGTGGTCTTAA").unwrap().to_rna()
+   )
+}
+
+// 29
+#[test]
+fn positive_length_sides_are_ok() {
+   let sides = [2, 2, 2];
+   let triangle = Triangle::build(sides);
+   assert!(triangle.is_some());
+}
+
+#[test]
+//#[ignore]
+fn zero_length_sides_are_illegal() {
+   let sides = [0, 0, 0];
+   let triangle = Triangle::build(sides);
+   assert!(triangle.is_none());
+}
+
+#[test]
+//#[ignore]
+fn equilateral_triangles_have_equal_sides() {
+   let sides = [2, 2, 2];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(triangle.is_equilateral());
+   assert!(!triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn larger_equilateral_triangles_have_equal_sides() {
+   let sides = [10, 10, 10];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(triangle.is_equilateral());
+   assert!(!triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn isosceles_triangles_have_two_equal_sides_one() {
+   let sides = [3, 4, 4];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(triangle.is_isosceles());
+   assert!(!triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn isosceles_triangles_have_two_equal_sides_two() {
+   let sides = [4, 4, 3];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(triangle.is_isosceles());
+   assert!(!triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn isosceles_triangles_have_two_equal_sides_three() {
+   let sides = [4, 3, 4];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(triangle.is_isosceles());
+   assert!(!triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn isosceles_triangles_have_two_equal_sides_four() {
+   let sides = [4, 7, 4];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(triangle.is_isosceles());
+   assert!(!triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn scalene_triangle_has_no_equal_sides_one() {
+   let sides = [3, 4, 5];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(!triangle.is_isosceles());
+   assert!(triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn scalene_triangle_has_no_equal_sides_two() {
+   let sides = [5, 4, 6];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(!triangle.is_isosceles());
+   assert!(triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn scalene_triangle_has_no_equal_sides_three() {
+   let sides = [10, 11, 12];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(!triangle.is_isosceles());
+   assert!(triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn scalene_triangle_has_no_equal_sides_four() {
+   let sides = [5, 4, 2];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(!triangle.is_isosceles());
+   assert!(triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+fn sum_of_two_sides_must_equal_or_exceed_the_remaining_side_one() {
+   let sides = [7, 3, 2];
+   let triangle = Triangle::build(sides);
+   assert!(triangle.is_none());
+}
+
+#[test]
+//#[ignore]
+fn sum_of_two_sides_must_equal_or_exceed_the_remaining_side_two() {
+   let sides = [1, 1, 3];
+   let triangle = Triangle::build(sides);
+   assert!(triangle.is_none());
+}
+
+#[test]
+//#[ignore]
+#[cfg(feature = "generic")]
+fn scalene_triangle_with_floating_point_sides() {
+   let sides = [0.4, 0.6, 0.3];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(!triangle.is_isosceles());
+   assert!(triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+#[cfg(feature = "generic")]
+fn equilateral_triangles_with_floating_point_sides() {
+   let sides = [0.2, 0.2, 0.2];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(triangle.is_equilateral());
+   assert!(!triangle.is_scalene());
+}
+
+#[test]
+//#[ignore]
+#[cfg(feature = "generic")]
+fn isosceles_triangle_with_floating_point_sides() {
+   let sides = [0.3, 0.4, 0.4];
+   let triangle = Triangle::build(sides).unwrap();
+   assert!(!triangle.is_equilateral());
+   assert!(triangle.is_isosceles());
+   assert!(!triangle.is_scalene());
+}
+
+// 30
+#[test]
+fn test_one30() {
+   assert_eq!("I", Roman::from(1).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_two() {
+   assert_eq!("II", Roman::from(2).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_three() {
+   assert_eq!("III", Roman::from(3).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_four() {
+   assert_eq!("IV", Roman::from(4).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_five() {
+   assert_eq!("V", Roman::from(5).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_six() {
+   assert_eq!("VI", Roman::from(6).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_nine() {
+   assert_eq!("IX", Roman::from(9).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_twenty_seven() {
+   assert_eq!("XXVII", Roman::from(27).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_forty_eight() {
+   assert_eq!("XLVIII", Roman::from(48).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_fifty_nine() {
+   assert_eq!("LIX", Roman::from(59).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_ninety_three() {
+   assert_eq!("XCIII", Roman::from(93).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_141() {
+   assert_eq!("CXLI", Roman::from(141).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_163() {
+   assert_eq!("CLXIII", Roman::from(163).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_402() {
+   assert_eq!("CDII", Roman::from(402).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_575() {
+   assert_eq!("DLXXV", Roman::from(575).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_911() {
+   assert_eq!("CMXI", Roman::from(911).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_1024() {
+   assert_eq!("MXXIV", Roman::from(1024).to_string());
+}
+
+#[test]
+//#[ignore]
+fn test_3000() {
+   assert_eq!("MMM", Roman::from(3000).to_string());
+}
+
+// 31
+#[test]
+fn single_bit_one_to_decimal() {
+   let input_base = 2;
+   let input_digits = &[1];
+   let output_base = 10;
+   let output_digits = vec![1];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn binary_to_single_decimal() {
+   let input_base = 2;
+   let input_digits = &[1, 0, 1];
+   let output_base = 10;
+   let output_digits = vec![5];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn single_decimal_to_binary() {
+   let input_base = 10;
+   let input_digits = &[5];
+   let output_base = 2;
+   let output_digits = vec![1, 0, 1];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn binary_to_multiple_decimal() {
+   let input_base = 2;
+   let input_digits = &[1, 0, 1, 0, 1, 0];
+   let output_base = 10;
+   let output_digits = vec![4, 2];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn decimal_to_binary() {
+   let input_base = 10;
+   let input_digits = &[4, 2];
+   let output_base = 2;
+   let output_digits = vec![1, 0, 1, 0, 1, 0];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn trinary_to_hexadecimal() {
+   let input_base = 3;
+   let input_digits = &[1, 1, 2, 0];
+   let output_base = 16;
+   let output_digits = vec![2, 10];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn hexadecimal_to_trinary() {
+   let input_base = 16;
+   let input_digits = &[2, 10];
+   let output_base = 3;
+   let output_digits = vec![1, 1, 2, 0];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn fifteen_bit_integer() {
+   let input_base = 97;
+   let input_digits = &[3, 46, 60];
+   let output_base = 73;
+   let output_digits = vec![6, 10, 45];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn empty_list() {
+   let input_base = 2;
+   let input_digits = &[];
+   let output_base = 10;
+   let output_digits = vec![];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn single_zero() {
+   let input_base = 10;
+   let input_digits = &[0];
+   let output_base = 2;
+   let output_digits = vec![];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn multiple_zeros() {
+   let input_base = 10;
+   let input_digits = &[0, 0, 0];
+   let output_base = 2;
+   let output_digits = vec![];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn leading_zeros() {
+   let input_base = 7;
+   let input_digits = &[0, 6, 0];
+   let output_base = 10;
+   let output_digits = vec![4, 2];
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Ok(output_digits)
+   );
+}
+
+#[test]
+//#[ignore]
+fn invalid_positive_digit() {
+   let input_base = 2;
+   let input_digits = &[1, 2, 1, 0, 1, 0];
+   let output_base = 10;
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Err(Error31::InvalidDigit(2))
+   );
+}
+
+#[test]
+//#[ignore]
+fn input_base_is_one() {
+   let input_base = 1;
+   let input_digits = &[];
+   let output_base = 10;
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Err(Error31::InvalidInputBase)
+   );
+}
+
+#[test]
+//#[ignore]
+fn output_base_is_one() {
+   let input_base = 2;
+   let input_digits = &[1, 0, 1, 0, 1, 0];
+   let output_base = 1;
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Err(Error31::InvalidOutputBase)
+   );
+}
+
+#[test]
+//#[ignore]
+fn input_base_is_zero() {
+   let input_base = 0;
+   let input_digits = &[];
+   let output_base = 10;
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Err(Error31::InvalidInputBase)
+   );
+}
+
+#[test]
+//#[ignore]
+fn output_base_is_zero() {
+   let input_base = 10;
+   let input_digits = &[7];
+   let output_base = 0;
+   assert_eq!(
+       convert(input_digits, input_base, output_base),
+       Err(Error31::InvalidOutputBase)
+   );
+}
+
+// 32
+fn some_strings(v: &[&str]) -> Option<Vec<String>> {
+    Some(v.iter().map(|s| s.to_string()).collect())
+ }
+ 
+ #[test]
+ fn test_grades_for_empty_school() {
+    let s = School::new();
+    assert_eq!(s.grades(), vec![]);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_grades_for_one_student() {
+    let mut s = School::new();
+    s.add(2, "Aimee");
+    assert_eq!(s.grades(), vec![2]);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_grades_for_several_students_are_sorted() {
+    let mut s = School::new();
+    s.add(2, "Aimee");
+    s.add(7, "Logan");
+    s.add(4, "Blair");
+    assert_eq!(s.grades(), vec![2, 4, 7]);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_grades_when_several_students_have_the_same_grade() {
+    let mut s = School::new();
+    s.add(2, "Aimee");
+    s.add(2, "Logan");
+    s.add(2, "Blair");
+    assert_eq!(s.grades(), vec![2]);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_grade_for_empty_school() {
+    let s = School::new();
+    assert_eq!(s.grade(1), None);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_grade_when_no_students_have_that_grade() {
+    let mut s = School::new();
+    s.add(7, "Logan");
+    assert_eq!(s.grade(1), None);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_grade_for_one_student() {
+    let mut s = School::new();
+    s.add(2, "Aimee");
+    assert_eq!(s.grade(2), some_strings(&["Aimee"]));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_grade_returns_students_sorted_by_name() {
+    let mut s = School::new();
+    s.add(2, "James");
+    s.add(2, "Blair");
+    s.add(2, "Paul");
+    assert_eq!(s.grade(2), some_strings(&["Blair", "James", "Paul"]));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn test_add_students_to_different_grades() {
+    let mut s = School::new();
+    s.add(3, "Chelsea");
+    s.add(7, "Logan");
+    assert_eq!(s.grades(), vec![3, 7]);
+    assert_eq!(s.grade(3), some_strings(&["Chelsea"]));
+    assert_eq!(s.grade(7), some_strings(&["Logan"]));
+ }
+
+ // 33
+ #[test]
+ fn finds_a_value_in_an_array_with_one_element() {
+    assert_eq!(find(&[6], 6), Some(0));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn finds_first_value_in_an_array_with_two_element() {
+    assert_eq!(find(&[1, 2], 1), Some(0));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn finds_second_value_in_an_array_with_two_element() {
+    assert_eq!(find(&[1, 2], 2), Some(1));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn finds_a_value_in_the_middle_of_an_array() {
+    assert_eq!(find(&[1, 3, 4, 6, 8, 9, 11], 6), Some(3));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn finds_a_value_at_the_beginning_of_an_array() {
+    assert_eq!(find(&[1, 3, 4, 6, 8, 9, 11], 1), Some(0));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn finds_a_value_at_the_end_of_an_array() {
+    assert_eq!(find(&[1, 3, 4, 6, 8, 9, 11], 11), Some(6));
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn finds_a_value_in_an_array_of_odd_length() {
+    assert_eq!(
+        find(&[1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 634], 144),
+        Some(9)
+    );
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn finds_a_value_in_an_array_of_even_length() {
+    assert_eq!(
+        find(&[1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377], 21),
+        Some(5)
+    );
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn identifies_that_a_value_is_not_included_in_the_array() {
+    assert_eq!(find(&[1, 3, 4, 6, 8, 9, 11], 7), None);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn a_value_smaller_than_the_arrays_smallest_value_is_not_included() {
+    assert_eq!(find(&[1, 3, 4, 6, 8, 9, 11], 0), None);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn a_value_larger_than_the_arrays_largest_value_is_not_included() {
+    assert_eq!(find(&[1, 3, 4, 6, 8, 9, 11], 13), None);
+ }
+ 
+ #[test]
+ //#[ignore]
+ fn nothing_is_included_in_an_empty_array() {
+    assert_eq!(find(&[], 1), None);
+ }
+ 
+ #[test]
+ //#[ignore]
+ #[cfg(feature = "generic")]
+ fn works_for_arrays() {
+    assert_eq!(find([6], 6), Some(0));
+ }
+ 
+ #[test]
+ //#[ignore]
+ #[cfg(feature = "generic")]
+ fn works_for_vec() {
+    let vector = vec![6];
+    assert_eq!(find(&vector, 6), Some(0));
+    assert_eq!(find(vector, 6), Some(0));
+ }
+ 
+ #[test]
+ //#[ignore]
+ #[cfg(feature = "generic")]
+ fn works_for_str_elements() {
+    assert_eq!(find(["a"], "a"), Some(0));
+    assert_eq!(find(["a", "b"], "b"), Some(1));
+ }
+
+// 34
+#[test]
+fn robots_are_created_with_position_and_direction() {
+   let robot = Robot::new(0, 0, Direction::North);
+   assert_eq!((0, 0), robot.position());
+   assert_eq!(&Direction::North, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn positions_can_be_negative() {
+   let robot = Robot::new(-1, -1, Direction::South);
+   assert_eq!((-1, -1), robot.position());
+   assert_eq!(&Direction::South, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_right_does_not_change_position() {
+   let robot = Robot::new(0, 0, Direction::North).turn_right();
+   assert_eq!((0, 0), robot.position());
+}
+
+#[test]
+//#[ignore]
+fn turning_right_from_north_points_the_robot_east() {
+   let robot = Robot::new(0, 0, Direction::North).turn_right();
+   assert_eq!(&Direction::East, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_right_from_east_points_the_robot_south() {
+   let robot = Robot::new(0, 0, Direction::East).turn_right();
+   assert_eq!(&Direction::South, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_right_from_south_points_the_robot_west() {
+   let robot = Robot::new(0, 0, Direction::South).turn_right();
+   assert_eq!(&Direction::West, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_right_from_west_points_the_robot_north() {
+   let robot = Robot::new(0, 0, Direction::West).turn_right();
+   assert_eq!(&Direction::North, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_left_does_not_change_position() {
+   let robot = Robot::new(0, 0, Direction::North).turn_left();
+   assert_eq!((0, 0), robot.position());
+}
+
+#[test]
+//#[ignore]
+fn turning_left_from_north_points_the_robot_west() {
+   let robot = Robot::new(0, 0, Direction::North).turn_left();
+   assert_eq!(&Direction::West, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_left_from_west_points_the_robot_south() {
+   let robot = Robot::new(0, 0, Direction::West).turn_left();
+   assert_eq!(&Direction::South, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_left_from_south_points_the_robot_east() {
+   let robot = Robot::new(0, 0, Direction::South).turn_left();
+   assert_eq!(&Direction::East, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn turning_left_from_east_points_the_robot_north() {
+   let robot = Robot::new(0, 0, Direction::East).turn_left();
+   assert_eq!(&Direction::North, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn advance_does_not_change_the_direction() {
+   let robot = Robot::new(0, 0, Direction::North).advance();
+   assert_eq!(&Direction::North, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn advance_increases_the_y_coordinate_by_one_when_facing_north() {
+   let robot = Robot::new(0, 0, Direction::North).advance();
+   assert_eq!((0, 1), robot.position());
+}
+
+#[test]
+//#[ignore]
+fn advance_decreases_the_y_coordinate_by_one_when_facing_south() {
+   let robot = Robot::new(0, 0, Direction::South).advance();
+   assert_eq!((0, -1), robot.position());
+}
+
+#[test]
+//#[ignore]
+fn advance_increases_the_x_coordinate_by_one_when_facing_east() {
+   let robot = Robot::new(0, 0, Direction::East).advance();
+   assert_eq!((1, 0), robot.position());
+}
+
+#[test]
+//#[ignore]
+fn advance_decreases_the_x_coordinate_by_one_when_facing_west() {
+   let robot = Robot::new(0, 0, Direction::West).advance();
+   assert_eq!((-1, 0), robot.position());
+}
+
+#[test]
+//#[ignore]
+fn follow_instructions_to_move_west_and_north() {
+   let robot = Robot::new(0, 0, Direction::North).instructions("LAAARALA");
+   assert_eq!((-4, 1), robot.position());
+   assert_eq!(&Direction::West, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn follow_instructions_to_move_west_and_south() {
+   let robot = Robot::new(2, -7, Direction::East).instructions("RRAAAAALA");
+   assert_eq!((-3, -8), robot.position());
+   assert_eq!(&Direction::South, robot.direction());
+}
+
+#[test]
+//#[ignore]
+fn follow_instructions_to_move_east_and_north() {
+   let robot = Robot::new(8, 4, Direction::South).instructions("LAAARRRALLLL");
+   assert_eq!((11, 5), robot.position());
+   assert_eq!(&Direction::North, robot.direction());
+}
+
+// 35
+#[test]
+fn paired_square_brackets() {
+   assert!(brackets_are_balanced("[]"));
+}
+
+#[test]
+//#[ignore]
+fn empty_string35() {
+   assert!(brackets_are_balanced(""));
+}
+
+#[test]
+//#[ignore]
+fn unpaired_brackets() {
+   assert!(!brackets_are_balanced("[["));
+}
+
+#[test]
+//#[ignore]
+fn wrong_ordered_brackets() {
+   assert!(!brackets_are_balanced("}{"));
+}
+
+#[test]
+//#[ignore]
+fn wrong_closing_bracket() {
+   assert!(!brackets_are_balanced("{]"));
+}
+
+#[test]
+//#[ignore]
+fn paired_with_whitespace() {
+   assert!(brackets_are_balanced("{ }"));
+}
+
+#[test]
+//#[ignore]
+fn simple_nested_brackets() {
+   assert!(brackets_are_balanced("{[]}"));
+}
+
+#[test]
+//#[ignore]
+fn several_paired_brackets() {
+   assert!(brackets_are_balanced("{}[]"));
+}
+
+#[test]
+//#[ignore]
+fn paired_and_nested_brackets() {
+   assert!(brackets_are_balanced("([{}({}[])])"));
+}
+
+#[test]
+//#[ignore]
+fn unopened_closing_brackets() {
+   assert!(!brackets_are_balanced("{[)][]}"));
+}
+
+#[test]
+//#[ignore]
+fn unpaired_and_nested_brackets() {
+   assert!(!brackets_are_balanced("([{])"));
+}
+
+#[test]
+//#[ignore]
+fn paired_and_wrong_nested_brackets() {
+   assert!(!brackets_are_balanced("[({]})"));
+}
+
+#[test]
+//#[ignore]
+fn math_expression() {
+   assert!(brackets_are_balanced("(((185 + 223.85) * 15) - 543)/2"));
+}
+
+#[test]
+//#[ignore]
+fn complex_latex_expression() {
+   let input = "\\left(\\begin{array}{cc} \\frac{1}{3} & x\\\\ \\mathrm{e}^{x} &... x^2 \
+                \\end{array}\\right)";
+   assert!(brackets_are_balanced(input));
+}
+
+// 37
+#[test]
+fn chess_position_on_the_board_is_some() {
+   assert!(ChessPosition::new(2, 4).is_some());
+}
+
+#[test]
+//#[ignore]
+fn chess_position_off_the_board_is_none() {
+   assert!(ChessPosition::new(-1, 2).is_none());
+
+   assert!(ChessPosition::new(8, 2).is_none());
+
+   assert!(ChessPosition::new(5, -1).is_none());
+
+   assert!(ChessPosition::new(5, 8).is_none());
+}
+
+#[test]
+//#[ignore]
+fn queen_is_created_with_a_valid_position() {
+   Queen::new(ChessPosition::new(2, 4).unwrap());
+}
+
+#[test]
+//#[ignore]
+fn queens_that_can_not_attack() {
+   let white_queen = Queen::new(ChessPosition::new(2, 4).unwrap());
+   let black_queen = Queen::new(ChessPosition::new(6, 6).unwrap());
+
+   assert!(!white_queen.can_attack(&black_queen));
+}
+
+#[test]
+//#[ignore]
+fn queens_on_the_same_rank_can_attack() {
+   let white_queen = Queen::new(ChessPosition::new(2, 4).unwrap());
+   let black_queen = Queen::new(ChessPosition::new(2, 6).unwrap());
+
+   assert!(white_queen.can_attack(&black_queen));
+}
+
+#[test]
+//#[ignore]
+fn queens_on_the_same_file_can_attack() {
+   let white_queen = Queen::new(ChessPosition::new(4, 5).unwrap());
+   let black_queen = Queen::new(ChessPosition::new(3, 5).unwrap());
+
+   assert!(white_queen.can_attack(&black_queen));
+}
+
+#[test]
+//#[ignore]
+fn queens_on_the_same_diagonal_can_attack_one() {
+   let white_queen = Queen::new(ChessPosition::new(2, 2).unwrap());
+   let black_queen = Queen::new(ChessPosition::new(0, 4).unwrap());
+
+   assert!(white_queen.can_attack(&black_queen));
+}
+
+#[test]
+//#[ignore]
+fn queens_on_the_same_diagonal_can_attack_two() {
+   let white_queen = Queen::new(ChessPosition::new(2, 2).unwrap());
+   let black_queen = Queen::new(ChessPosition::new(3, 1).unwrap());
+
+   assert!(white_queen.can_attack(&black_queen));
+}
+
+#[test]
+//#[ignore]
+fn queens_on_the_same_diagonal_can_attack_three() {
+   let white_queen = Queen::new(ChessPosition::new(2, 2).unwrap());
+   let black_queen = Queen::new(ChessPosition::new(1, 1).unwrap());
+
+   assert!(white_queen.can_attack(&black_queen));
+}
+
+#[test]
+//#[ignore]
+fn queens_on_the_same_diagonal_can_attack_four() {
+   let white_queen = Queen::new(ChessPosition::new(2, 2).unwrap());
+   let black_queen = Queen::new(ChessPosition::new(5, 5).unwrap());
+
+   assert!(white_queen.can_attack(&black_queen));
+}
+
+// 39
+#[test]
+fn empty_equals_empty() {
+   let v: &[u32] = &[];
+
+   assert_eq!(Comparison::Equal, sublist(&v, &v));
+}
+
+#[test]
+//#[ignore]
+fn test_empty_is_a_sublist_of_anything() {
+   assert_eq!(Comparison::Sublist, sublist(&[], &['a', 's', 'd', 'f']));
+}
+
+#[test]
+//#[ignore]
+fn test_anything_is_a_superlist_of_empty() {
+   assert_eq!(Comparison::Superlist, sublist(&['a', 's', 'd', 'f'], &[]));
+}
+
+#[test]
+//#[ignore]
+fn test_1_is_not_2() {
+   assert_eq!(Comparison::Unequal, sublist(&[1], &[2]));
+}
+
+#[test]
+//#[ignore]
+fn test_compare_larger_equal_lists() {
+   use std::iter::repeat;
+
+   let v: Vec<char> = repeat('x').take(1000).collect();
+
+   assert_eq!(Comparison::Equal, sublist(&v, &v));
+}
+
+#[test]
+//#[ignore]
+fn test_sublist_at_start() {
+   assert_eq!(Comparison::Sublist, sublist(&[1, 2, 3], &[1, 2, 3, 4, 5]));
+}
+
+#[test]
+//#[ignore]
+fn sublist_in_middle() {
+   assert_eq!(Comparison::Sublist, sublist(&[4, 3, 2], &[5, 4, 3, 2, 1]));
+}
+
+#[test]
+//#[ignore]
+fn sublist_at_end() {
+   assert_eq!(Comparison::Sublist, sublist(&[3, 4, 5], &[1, 2, 3, 4, 5]));
+}
+
+#[test]
+//#[ignore]
+fn partially_matching_sublist_at_start() {
+   assert_eq!(Comparison::Sublist, sublist(&[1, 1, 2], &[1, 1, 1, 2]));
+}
+
+#[test]
+//#[ignore]
+fn sublist_early_in_huge_list() {
+   let huge: Vec<u32> = (1..1000000).collect();
+
+   assert_eq!(Comparison::Sublist, sublist(&[3, 4, 5], &huge));
+}
+
+#[test]
+//#[ignore]
+fn huge_sublist_not_in_huge_list() {
+   let v1: Vec<u64> = (10..1000001).collect();
+   let v2: Vec<u64> = (1..1000000).collect();
+
+   assert_eq!(Comparison::Unequal, sublist(&v1, &v2));
+}
+
+#[test]
+//#[ignore]
+fn superlist_at_start() {
+   assert_eq!(Comparison::Superlist, sublist(&[1, 2, 3, 4, 5], &[1, 2, 3]));
+}
+
+#[test]
+//#[ignore]
+fn superlist_in_middle() {
+   assert_eq!(Comparison::Superlist, sublist(&[5, 4, 3, 2, 1], &[4, 3, 2]));
+}
+
+#[test]
+//#[ignore]
+fn superlist_at_end() {
+   assert_eq!(Comparison::Superlist, sublist(&[1, 2, 3, 4, 5], &[3, 4, 5]));
+}
+
+#[test]
+//#[ignore]
+fn superlist_early_in_huge_list() {
+   let huge: Vec<u32> = (1..1000000).collect();
+
+   assert_eq!(Comparison::Superlist, sublist(&huge, &[3, 4, 5]));
+}
+
+#[test]
+//#[ignore]
+fn recurring_values_sublist() {
+   assert_eq!(
+       Comparison::Sublist,
+       sublist(&[1, 2, 1, 2, 3], &[1, 2, 3, 1, 2, 1, 2, 3, 2, 1])
+   );
+}
+
+#[test]
+//#[ignore]
+fn recurring_values_unequal() {
+   assert_eq!(
+       Comparison::Unequal,
+       sublist(&[1, 2, 1, 2, 3], &[1, 2, 3, 1, 2, 3, 2, 3, 2, 1])
+   );
+}
+
+// 40
+fn assert_in_delta(expected: f64, actual: f64) {
+   let diff: f64 = (expected - actual).abs();
+   let delta: f64 = 0.01;
+   if diff > delta {
+       panic!(
+           "Your result of {} should be within {} of the expected result {}",
+           actual, delta, expected
+       )
+   }
+}
+
+#[test]
+fn earth_age() {
+   let duration = Duration::from(1_000_000_000);
+   assert_in_delta(31.69, Earth::years_during(&duration));
+}
+
+#[test]
+//#[ignore]
+fn mercury_age() {
+   let duration = Duration::from(2_134_835_688);
+   assert_in_delta(280.88, Mercury::years_during(&duration));
+}
+
+#[test]
+//#[ignore]
+fn venus_age() {
+   let duration = Duration::from(189_839_836);
+   assert_in_delta(9.78, Venus::years_during(&duration));
+}
+
+#[test]
+//#[ignore]
+fn mars_age() {
+   let duration = Duration::from(2_329_871_239);
+   assert_in_delta(39.25, Mars::years_during(&duration));
+}
+
+#[test]
+//#[ignore]
+fn jupiter_age() {
+   let duration = Duration::from(901_876_382);
+   assert_in_delta(2.41, Jupiter::years_during(&duration));
+}
+
+#[test]
+//#[ignore]
+fn saturn_age() {
+   let duration = Duration::from(3_000_000_000);
+   assert_in_delta(3.23, Saturn::years_during(&duration));
+}
+
+#[test]
+//#[ignore]
+fn uranus_age() {
+   let duration = Duration::from(3_210_123_456);
+   assert_in_delta(1.21, Uranus::years_during(&duration));
+}
+
+#[test]
+//#[ignore]
+fn neptune_age() {
+   let duration = Duration::from(8_210_123_456);
+   assert_in_delta(1.58, Neptune::years_during(&duration));
+}
+
+// 42
+
+macro_rules! hashmap {
+   ($($key: expr => $value: expr),* $(,)*) => {
+      {
+         let mut _map = ::std::collections::HashMap::new();
+         $(
+            _map.insert($key, $value);
+         )*
+         _map
+      }
+   };
+}
+
+#[test]
+fn test_empty() {
+   let expected: HashMap<u32, u32> = HashMap::new();
+   let computed: HashMap<u32, u32> = hashmap!();
+   assert_eq!(computed, expected);
+}
+
+#[test]
+//#[ignore]
+fn test_no_trailing_comma() {
+   let mut expected = HashMap::new();
+   expected.insert(1, "one");
+   expected.insert(2, "two");
+   assert_eq!(hashmap!(1 => "one", 2 => "two"), expected);
+}
+
+#[test]
+//#[ignore]
+fn test_trailing_comma() {
+   let mut expected = HashMap::new();
+   expected.insert('h', 89);
+   expected.insert('a', 1);
+   expected.insert('s', 19);
+   expected.insert('h', 8);
+   assert_eq!(
+       hashmap!(
+           'h' => 89,
+           'a' => 1,
+           's' => 19,
+           'h' => 8,
+       ),
+       expected
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_nested() {
+   let mut expected = HashMap::new();
+   expected.insert("non-empty", {
+       let mut subhashmap = HashMap::new();
+       subhashmap.insert(23, 623);
+       subhashmap.insert(34, 21);
+       subhashmap
+   });
+   expected.insert("empty", HashMap::new());
+   assert_eq!(
+       hashmap!(
+           "non-empty" => hashmap!(
+               23 => 623,
+               34 => 21
+           ),
+           "empty" => hashmap!()
+       ),
+       expected
+   );
+}
+
+mod test {
+   #[test]
+   //#[ignore]
+   fn type_not_in_scope() {
+       let _expected: ::std::collections::HashMap<(), ()> = hashmap!();
+   }
+}
+
+// 43
+fn compare_allergy_vectors(expected: &[Allergen], actual: &[Allergen]) {
+   for element in expected {
+       if !actual.contains(element) {
+           panic!(
+               "Allergen missing\n  {:?} should be in {:?}",
+               element, actual
+           );
+       }
+   }
+
+   if actual.len() != expected.len() {
+       panic!(
+           "Allergy vectors are of different lengths\n  expected {:?}\n  got {:?}",
+           expected, actual
+       );
+   }
+}
+
+#[test]
+fn is_not_allergic_to_anything() {
+   let allergies = Allergies::new(0);
+   assert!(!allergies.is_allergic_to(&Allergen::Peanuts));
+   assert!(!allergies.is_allergic_to(&Allergen::Cats));
+   assert!(!allergies.is_allergic_to(&Allergen::Strawberries));
+}
+
+#[test]
+//#[ignore]
+fn is_allergic_to_eggs() {
+   assert!(Allergies::new(1).is_allergic_to(&Allergen::Eggs));
+}
+
+#[test]
+//#[ignore]
+fn is_allergic_to_egg_shellfish_and_strawberries() {
+   let allergies = Allergies::new(5);
+   assert!(allergies.is_allergic_to(&Allergen::Eggs));
+   assert!(allergies.is_allergic_to(&Allergen::Shellfish));
+   assert!(!allergies.is_allergic_to(&Allergen::Strawberries));
+}
+
+#[test]
+//#[ignore]
+fn no_allergies_at_all() {
+   let expected = &[];
+   let allergies = Allergies::new(0).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn allergic_to_just_eggs() {
+   let expected = &[Allergen::Eggs];
+   let allergies = Allergies::new(1).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn allergic_to_just_peanuts() {
+   let expected = &[Allergen::Peanuts];
+   let allergies = Allergies::new(2).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn allergic_to_just_strawberries() {
+   let expected = &[Allergen::Strawberries];
+   let allergies = Allergies::new(8).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn allergic_to_eggs_and_peanuts() {
+   let expected = &[Allergen::Eggs, Allergen::Peanuts];
+   let allergies = Allergies::new(3).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn allergic_to_eggs_and_shellfish() {
+   let expected = &[Allergen::Eggs, Allergen::Shellfish];
+   let allergies = Allergies::new(5).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn allergic_to_many_things() {
+   let expected = &[
+       Allergen::Strawberries,
+       Allergen::Tomatoes,
+       Allergen::Chocolate,
+       Allergen::Pollen,
+       Allergen::Cats,
+   ];
+   let allergies = Allergies::new(248).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn allergic_to_everything() {
+   let expected = &[
+       Allergen::Eggs,
+       Allergen::Peanuts,
+       Allergen::Shellfish,
+       Allergen::Strawberries,
+       Allergen::Tomatoes,
+       Allergen::Chocolate,
+       Allergen::Pollen,
+       Allergen::Cats,
+   ];
+   let allergies = Allergies::new(255).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+#[test]
+//#[ignore]
+fn scores_over_255_do_not_trigger_false_positives() {
+   let expected = &[
+       Allergen::Eggs,
+       Allergen::Shellfish,
+       Allergen::Strawberries,
+       Allergen::Tomatoes,
+       Allergen::Chocolate,
+       Allergen::Pollen,
+       Allergen::Cats,
+   ];
+   let allergies = Allergies::new(509).allergies();
+
+   compare_allergy_vectors(expected, &allergies);
+}
+
+// 44
+#[test]
+fn to_single_byte() {
+   assert_eq!(&[0x00], to_bytes(&[0x00]).as_slice());
+   assert_eq!(&[0x40], to_bytes(&[0x40]).as_slice());
+   assert_eq!(&[0x7f], to_bytes(&[0x7f]).as_slice());
+}
+
+#[test]
+//#[ignore]
+fn to_double_byte() {
+   assert_eq!(&[0x81, 0x00], to_bytes(&[0x80]).as_slice());
+   assert_eq!(&[0xc0, 0x00], to_bytes(&[0x2000]).as_slice());
+   assert_eq!(&[0xff, 0x7f], to_bytes(&[0x3fff]).as_slice());
+}
+
+#[test]
+//#[ignore]
+fn to_triple_byte() {
+   assert_eq!(&[0x81, 0x80, 0x00], to_bytes(&[0x4000]).as_slice());
+   assert_eq!(&[0xc0, 0x80, 0x00], to_bytes(&[0x10_0000]).as_slice());
+   assert_eq!(&[0xff, 0xff, 0x7f], to_bytes(&[0x1f_ffff]).as_slice());
+}
+
+#[test]
+//#[ignore]
+fn to_quadruple_byte() {
+   assert_eq!(&[0x81, 0x80, 0x80, 0x00], to_bytes(&[0x20_0000]).as_slice());
+   assert_eq!(
+       &[0xc0, 0x80, 0x80, 0x00],
+       to_bytes(&[0x0800_0000]).as_slice()
+   );
+   assert_eq!(
+       &[0xff, 0xff, 0xff, 0x7f],
+       to_bytes(&[0x0fff_ffff]).as_slice()
+   );
+}
+
+#[test]
+//#[ignore]
+fn to_quintuple_byte() {
+   assert_eq!(
+       &[0x81, 0x80, 0x80, 0x80, 0x00],
+       to_bytes(&[0x1000_0000]).as_slice()
+   );
+   assert_eq!(
+       &[0x8f, 0xf8, 0x80, 0x80, 0x00],
+       to_bytes(&[0xff00_0000]).as_slice()
+   );
+   assert_eq!(
+       &[0x8f, 0xff, 0xff, 0xff, 0x7f],
+       to_bytes(&[0xffff_ffff]).as_slice()
+   );
+}
+
+#[test]
+//#[ignore]
+fn from_bytes_test() {
+   assert_eq!(Ok(vec![0x7f]), from_bytes(&[0x7f]));
+   assert_eq!(Ok(vec![0x2000]), from_bytes(&[0xc0, 0x00]));
+   assert_eq!(Ok(vec![0x1f_ffff]), from_bytes(&[0xff, 0xff, 0x7f]));
+   assert_eq!(Ok(vec![0x20_0000]), from_bytes(&[0x81, 0x80, 0x80, 0x00]));
+   assert_eq!(
+       Ok(vec![0xffff_ffff]),
+       from_bytes(&[0x8f, 0xff, 0xff, 0xff, 0x7f])
+   );
+}
+
+#[test]
+//#[ignore]
+fn to_bytes_multiple_values() {
+   assert_eq!(&[0x40, 0x7f], to_bytes(&[0x40, 0x7f]).as_slice());
+   assert_eq!(
+       &[0x81, 0x80, 0x00, 0xc8, 0xe8, 0x56],
+       to_bytes(&[0x4000, 0x12_3456]).as_slice()
+   );
+   assert_eq!(
+       &[
+           0xc0, 0x00, 0xc8, 0xe8, 0x56, 0xff, 0xff, 0xff, 0x7f, 0x00, 0xff, 0x7f, 0x81, 0x80,
+           0x00
+       ],
+       to_bytes(&[0x2000, 0x12_3456, 0x0fff_ffff, 0x00, 0x3fff, 0x4000]).as_slice()
+   );
+}
+
+#[test]
+//#[ignore]
+fn from_bytes_multiple_values() {
+   assert_eq!(
+       Ok(vec![0x2000, 0x12_3456, 0x0fff_ffff, 0x00, 0x3fff, 0x4000]),
+       from_bytes(&[
+           0xc0, 0x00, 0xc8, 0xe8, 0x56, 0xff, 0xff, 0xff, 0x7f, 0x00, 0xff, 0x7f, 0x81, 0x80,
+           0x00,
+       ])
+   );
+}
+
+#[test]
+//#[ignore]
+fn incomplete_byte_sequence() {
+   assert_eq!(Err(Error44::IncompleteNumber), from_bytes(&[0xff]));
+}
+
+#[test]
+//#[ignore]
+fn zero_incomplete_byte_sequence() {
+   assert_eq!(Err(Error44::IncompleteNumber), from_bytes(&[0x80]));
+}
+
+#[test]
+//#[ignore]
+fn overflow_u32() {
+   assert_eq!(
+       Err(Error44::Overflow),
+       from_bytes(&[0xff, 0xff, 0xff, 0xff, 0x7f])
+   );
+}
+
+#[test]
+//#[ignore]
+fn chained_execution_is_identity() {
+   let test = &[0xf2, 0xf6, 0x96, 0x9c, 0x3b, 0x39, 0x2e, 0x30, 0xb3, 0x24];
+   assert_eq!(Ok(Vec::from(&test[..])), from_bytes(&to_bytes(test)));
+}
+
+// 45
+fn to_some_string(s: &str) -> Option<String> {
+   Some(s.to_string())
+}
+
+#[test]
+fn test_cleans_the_number() {
+   assert_eq!(number("(223) 456-7890"), to_some_string("2234567890"));
+}
+
+#[test]
+//#[ignore]
+fn test_cleans_numbers_with_dots() {
+   assert_eq!(number("223.456.7890"), to_some_string("2234567890"));
+}
+
+#[test]
+//#[ignore]
+fn test_cleans_numbers_with_multiple_spaces() {
+   assert_eq!(number("223 456   7890   "), to_some_string("2234567890"));
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_when_9_digits() {
+   assert_eq!(number("123456789"), None);
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_when_11_digits_does_not_start_with_a_1() {
+   assert_eq!(number("22234567890"), None);
+}
+
+#[test]
+//#[ignore]
+fn test_valid_when_11_digits_and_starting_with_1() {
+   assert_eq!(number("12234567890"), to_some_string("2234567890"));
+}
+
+#[test]
+//#[ignore]
+fn test_valid_when_11_digits_and_starting_with_1_even_with_punctuation() {
+   assert_eq!(number("+1 (223) 456-7890"), to_some_string("2234567890"));
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_when_more_than_11_digits() {
+   assert_eq!(number("321234567890"), None);
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_with_letters() {
+   assert_eq!(number("123-abc-7890"), None);
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_with_punctuations() {
+   assert_eq!(number("123-@:!-7890"), None);
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_if_area_code_does_not_start_with_2_9() {
+   assert_eq!(number("(123) 456-7890"), None);
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_if_exchange_code_does_not_start_with_2_9() {
+   assert_eq!(number("(223) 056-7890"), None);
+}
+
+// 46
+#[test]
+fn addition() {
+   let command = "What is 1 plus 1?";
+   assert_eq!(Some(2), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn more_addition() {
+   let command = "What is 53 plus 2?";
+   assert_eq!(Some(55), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn addition_with_negative_numbers() {
+   let command = "What is -1 plus -10?";
+   assert_eq!(Some(-11), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn large_addition() {
+   let command = "What is 123 plus 45678?";
+   assert_eq!(Some(45801), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn subtraction() {
+   let command = "What is 4 minus -12?";
+   assert_eq!(Some(16), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn multiplication() {
+   let command = "What is -3 multiplied by 25?";
+   assert_eq!(Some(-75), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn division() {
+   let command = "What is 33 divided by -3?";
+   assert_eq!(Some(-11), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn multiple_additions() {
+   let command = "What is 1 plus 1 plus 1?";
+   assert_eq!(Some(3), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn addition_and_subtraction() {
+   let command = "What is 1 plus 5 minus -2?";
+   assert_eq!(Some(8), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn multiple_subtraction() {
+   let command = "What is 20 minus 4 minus 13?";
+   assert_eq!(Some(3), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn subtraction_then_addition() {
+   let command = "What is 17 minus 6 plus 3?";
+   assert_eq!(Some(14), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn multiple_multiplications() {
+   let command = "What is 2 multiplied by -2 multiplied by 3?";
+   assert_eq!(Some(-12), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn addition_and_multiplication() {
+   let command = "What is -3 plus 7 multiplied by -2?";
+   assert_eq!(Some(-8), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn multiple_divisions() {
+   let command = "What is -12 divided by 2 divided by -3?";
+   assert_eq!(Some(2), answer(command));
+}
+
+#[test]
+//#[ignore]
+fn unknown_operation() {
+   let command = "What is 52 cubed?";
+   assert!(answer(command).is_none());
+}
+
+#[test]
+//#[ignore]
+fn non_math_question() {
+   let command = "Who is the President of the United States?";
+   assert!(answer(command).is_none());
+}
+
+// 47
+#[test]
+fn just_the_header_if_no_input() {
+   let input = "";
+   let expected = "Team                           | MP |  W |  D |  L |  P";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn a_win_is_three_points_a_loss_is_zero_points() {
+   let input = "Allegoric Alaskans;Blithering Badgers;win";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  1 |  1 |  0 |  0 |  3\n"
+       + "Blithering Badgers             |  1 |  0 |  0 |  1 |  0";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn a_win_can_also_be_expressed_as_a_loss() {
+   let input = "Blithering Badgers;Allegoric Alaskans;loss";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  1 |  1 |  0 |  0 |  3\n"
+       + "Blithering Badgers             |  1 |  0 |  0 |  1 |  0";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn a_different_team_can_win() {
+   let input = "Blithering Badgers;Allegoric Alaskans;win";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Blithering Badgers             |  1 |  1 |  0 |  0 |  3\n"
+       + "Allegoric Alaskans             |  1 |  0 |  0 |  1 |  0";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn a_draw_is_one_point_each() {
+   let input = "Allegoric Alaskans;Blithering Badgers;draw";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  1 |  0 |  1 |  0 |  1\n"
+       + "Blithering Badgers             |  1 |  0 |  1 |  0 |  1";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn there_can_be_more_than_one_match() {
+   let input = "Allegoric Alaskans;Blithering Badgers;win\n".to_string()
+       + "Allegoric Alaskans;Blithering Badgers;win";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  2 |  2 |  0 |  0 |  6\n"
+       + "Blithering Badgers             |  2 |  0 |  0 |  2 |  0";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn there_can_be_more_than_one_winner() {
+   let input = "Allegoric Alaskans;Blithering Badgers;loss\n".to_string()
+       + "Allegoric Alaskans;Blithering Badgers;win";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  2 |  1 |  0 |  1 |  3\n"
+       + "Blithering Badgers             |  2 |  1 |  0 |  1 |  3";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn there_can_be_more_than_two_teams() {
+   let input = "Allegoric Alaskans;Blithering Badgers;win\n".to_string()
+       + "Blithering Badgers;Courageous Californians;win\n"
+       + "Courageous Californians;Allegoric Alaskans;loss";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  2 |  2 |  0 |  0 |  6\n"
+       + "Blithering Badgers             |  2 |  1 |  0 |  1 |  3\n"
+       + "Courageous Californians        |  2 |  0 |  0 |  2 |  0";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn typical_input() {
+   let input = "Allegoric Alaskans;Blithering Badgers;win\n".to_string()
+       + "Devastating Donkeys;Courageous Californians;draw\n"
+       + "Devastating Donkeys;Allegoric Alaskans;win\n"
+       + "Courageous Californians;Blithering Badgers;loss\n"
+       + "Blithering Badgers;Devastating Donkeys;loss\n"
+       + "Allegoric Alaskans;Courageous Californians;win";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Devastating Donkeys            |  3 |  2 |  1 |  0 |  7\n"
+       + "Allegoric Alaskans             |  3 |  2 |  0 |  1 |  6\n"
+       + "Blithering Badgers             |  3 |  1 |  0 |  2 |  3\n"
+       + "Courageous Californians        |  3 |  0 |  1 |  2 |  1";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn incomplete_competition_not_all_pairs_have_played() {
+   let input = "Allegoric Alaskans;Blithering Badgers;loss\n".to_string()
+       + "Devastating Donkeys;Allegoric Alaskans;loss\n"
+       + "Courageous Californians;Blithering Badgers;draw\n"
+       + "Allegoric Alaskans;Courageous Californians;win";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  3 |  2 |  0 |  1 |  6\n"
+       + "Blithering Badgers             |  2 |  1 |  1 |  0 |  4\n"
+       + "Courageous Californians        |  2 |  0 |  1 |  1 |  1\n"
+       + "Devastating Donkeys            |  1 |  0 |  0 |  1 |  0";
+
+   assert_eq!(tally(&input), expected);
+}
+
+#[test]
+//#[ignore]
+fn ties_broken_alphabetically() {
+   let input = "Courageous Californians;Devastating Donkeys;win\n".to_string()
+       + "Allegoric Alaskans;Blithering Badgers;win\n"
+       + "Devastating Donkeys;Allegoric Alaskans;loss\n"
+       + "Courageous Californians;Blithering Badgers;win\n"
+       + "Blithering Badgers;Devastating Donkeys;draw\n"
+       + "Allegoric Alaskans;Courageous Californians;draw";
+   let expected = "Team                           | MP |  W |  D |  L |  P\n".to_string()
+       + "Allegoric Alaskans             |  3 |  2 |  1 |  0 |  7\n"
+       + "Courageous Californians        |  3 |  2 |  1 |  0 |  7\n"
+       + "Blithering Badgers             |  3 |  0 |  1 |  2 |  1\n"
+       + "Devastating Donkeys            |  3 |  0 |  1 |  2 |  1";
+
+   assert_eq!(tally(&input), expected);
+}
