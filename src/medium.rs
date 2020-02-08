@@ -3604,3 +3604,73 @@ pub fn tally(input: &str) -> String {
     FootballGame::new(input).show()
 }
 
+// 48 自定义集合
+/*
+创建自定义 set 类型。
+
+有时需要定义某种类型的自定义数据结构，例如一个集合(set)。在本练习中，您将定义自己的集合。它的内部工作原理无关紧要，只要它的行为就像一组唯一元素的集合
+*/
+#[derive(Debug)]
+pub struct CustomSet<T> {
+    date: Vec<T>,
+}
+
+impl<T: Ord + Clone> PartialEq for CustomSet<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.date.iter().all(|x| other.date.contains(x))
+            && other.date.iter().all(|x| self.date.contains(x))
+    }
+}
+
+impl<T: Ord + Clone> CustomSet<T> {
+
+    pub fn new(input: &[T]) -> Self {
+        let temp = input.iter().map(|d| d.clone()).collect::<Vec<_>>();
+        CustomSet {
+            date: temp,
+        }
+    }
+
+    pub fn contains(&self, element: &T) -> bool {
+        self.date.contains(element)
+    }
+
+    pub fn add(&mut self, element: T) {
+        if !self.date.contains(&element) {
+            self.date.push(element.clone());
+        }
+    }
+
+    pub fn is_subset(&self, other: &Self) -> bool {
+        self.date.iter().all(|x| other.date.contains(x))
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.date.is_empty()
+    }
+
+    pub fn is_disjoint(&self, other: &Self) -> bool {
+        !self.date.iter().any(|x| other.date.contains(x))
+    }
+
+    pub fn intersection(&self, other: &Self) -> Self {
+        CustomSet::new(&self.date.iter()
+            .cloned()
+            .filter(|x| other.contains(x))
+            .collect::<Vec<_>>())
+    }
+
+    pub fn difference(&self, other: &Self) -> Self {
+        CustomSet::new(&self.date.iter()
+            .cloned()
+            .filter(|x| !other.contains(x))
+            .collect::<Vec<_>>())
+    }
+
+    pub fn union(&self, other: &Self) -> Self {
+        CustomSet::new(&self.date.iter()
+            .cloned()
+            .chain(other.date.iter().cloned())
+            .collect::<Vec<_>>())
+    }
+}
