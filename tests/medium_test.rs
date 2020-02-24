@@ -4596,3 +4596,1753 @@ fn union_of_non_empty_sets_contains_all_unique_elements() {
    let set2 = CustomSet::new(&[2, 3]);
    assert_eq!(set1.union(&set2), CustomSet::new(&[3, 2, 1]));
 }
+
+// 49
+// use std::collections::HashMap;
+
+fn assert_alphametic_solution_eq(puzzle: &str, solution: &[(char, u8)]) {
+   let answer = solve(puzzle);
+   let solution: HashMap<char, u8> = solution.iter().cloned().collect();
+   assert_eq!(answer, Some(solution));
+}
+
+#[test]
+fn test_with_three_letters() {
+   assert_alphametic_solution_eq("I + BB == ILL", &[('I', 1), ('B', 9), ('L', 0)]);
+}
+
+#[test]
+//#[ignore]
+fn test_must_have_unique_value_for_each_letter() {
+   let answer = solve("A == B");
+   assert_eq!(answer, None);
+}
+
+#[test]
+//#[ignore]
+fn test_leading_zero_solution_is_invalid() {
+   let answer = solve("ACA + DD == BD");
+   assert_eq!(answer, None);
+}
+
+#[test]
+//#[ignore]
+fn test_puzzle_with_four_letters() {
+   assert_alphametic_solution_eq("AS + A == MOM", &[('A', 9), ('S', 2), ('M', 1), ('O', 0)]);
+}
+
+#[test]
+//#[ignore]
+fn test_puzzle_with_six_letters() {
+   assert_alphametic_solution_eq(
+       "NO + NO + TOO == LATE",
+       &[('N', 7), ('O', 4), ('T', 9), ('L', 1), ('A', 0), ('E', 2)],
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_puzzle_with_seven_letters() {
+   assert_alphametic_solution_eq(
+       "HE + SEES + THE == LIGHT",
+       &[
+           ('E', 4),
+           ('G', 2),
+           ('H', 5),
+           ('I', 0),
+           ('L', 1),
+           ('S', 9),
+           ('T', 7),
+       ],
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_puzzle_with_eight_letters() {
+   assert_alphametic_solution_eq(
+       "SEND + MORE == MONEY",
+       &[
+           ('S', 9),
+           ('E', 5),
+           ('N', 6),
+           ('D', 7),
+           ('M', 1),
+           ('O', 0),
+           ('R', 8),
+           ('Y', 2),
+       ],
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_puzzle_with_ten_letters() {
+   assert_alphametic_solution_eq(
+       "AND + A + STRONG + OFFENSE + AS + A + GOOD == DEFENSE",
+       &[
+           ('A', 5),
+           ('D', 3),
+           ('E', 4),
+           ('F', 7),
+           ('G', 8),
+           ('N', 0),
+           ('O', 2),
+           ('R', 1),
+           ('S', 6),
+           ('T', 9),
+       ],
+   );
+}
+
+// 50
+#[test]
+fn test_case_1() {
+   assert_eq!(
+       solve(3, 5, 1, &Bucket::One),
+       BucketStats {
+           moves: 4,
+           goal_bucket: Bucket::One,
+           other_bucket: 5,
+       }
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_case_2() {
+   assert_eq!(
+       solve(3, 5, 1, &Bucket::Two),
+       BucketStats {
+           moves: 8,
+           goal_bucket: Bucket::Two,
+           other_bucket: 3,
+       }
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_case_3() {
+   assert_eq!(
+       solve(7, 11, 2, &Bucket::One),
+       BucketStats {
+           moves: 14,
+           goal_bucket: Bucket::One,
+           other_bucket: 11,
+       }
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_case_4() {
+   assert_eq!(
+       solve(7, 11, 2, &Bucket::Two),
+       BucketStats {
+           moves: 18,
+           goal_bucket: Bucket::Two,
+           other_bucket: 7,
+       }
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_case_5() {
+   assert_eq!(
+       solve(1, 3, 3, &Bucket::Two),
+       BucketStats {
+           moves: 1,
+           goal_bucket: Bucket::Two,
+           other_bucket: 0,
+       }
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_case_6() {
+   assert_eq!(
+       solve(2, 3, 3, &Bucket::One),
+       BucketStats {
+           moves: 2,
+           goal_bucket: Bucket::Two,
+           other_bucket: 2,
+       }
+   );
+}
+
+// 51
+#[test]
+fn test_word_beginning_with_a() {
+   assert_eq!(translate("apple"), "appleay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_e() {
+   assert_eq!(translate("ear"), "earay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_i() {
+   assert_eq!(translate("igloo"), "iglooay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_o() {
+   assert_eq!(translate("object"), "objectay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_u() {
+   assert_eq!(translate("under"), "underay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_a_vowel_and_followed_by_a_qu() {
+   assert_eq!(translate("equal"), "equalay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_p() {
+   assert_eq!(translate("pig"), "igpay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_k() {
+   assert_eq!(translate("koala"), "oalakay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_y() {
+   assert_eq!(translate("yellow"), "ellowyay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_x() {
+   assert_eq!(translate("xenon"), "enonxay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_q_without_a_following_u() {
+   assert_eq!(translate("qat"), "atqay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_ch() {
+   assert_eq!(translate("chair"), "airchay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_qu() {
+   assert_eq!(translate("queen"), "eenquay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_qu_and_a_preceding_consonant() {
+   assert_eq!(translate("square"), "aresquay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_th() {
+   assert_eq!(translate("therapy"), "erapythay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_thr() {
+   assert_eq!(translate("thrush"), "ushthray");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_sch() {
+   assert_eq!(translate("school"), "oolschay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_yt() {
+   assert_eq!(translate("yttria"), "yttriaay");
+}
+
+#[test]
+//#[ignore]
+fn test_word_beginning_with_xr() {
+   assert_eq!(translate("xray"), "xrayay");
+}
+
+#[test]
+//#[ignore]
+fn test_y_is_treated_like_a_vowel_at_the_end_of_a_consonant_cluster() {
+   assert_eq!(translate("rhythm"), "ythmrhay");
+}
+
+#[test]
+//#[ignore]
+fn test_a_whole_phrase() {
+   assert_eq!(translate("quick fast run"), "ickquay astfay unray");
+}
+
+// 52
+#[test]
+fn test_a() {
+   assert_eq!(get_diamond('A'), vec!["A"]);
+}
+
+#[test]
+//#[ignore]
+fn test_b() {
+   assert_eq!(get_diamond('B'), vec![" A ", "B B", " A "]);
+}
+
+#[test]
+//#[ignore]
+fn test_c() {
+   assert_eq!(
+       get_diamond('C'),
+       vec!["  A  ", " B B ", "C   C", " B B ", "  A  "]
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_d() {
+   assert_eq!(
+       get_diamond('D'),
+       vec!["   A   ", "  B B  ", " C   C ", "D     D", " C   C ", "  B B  ", "   A   ",]
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_e() {
+   assert_eq!(
+       get_diamond('Z'),
+       vec![
+           "                         A                         ",
+           "                        B B                        ",
+           "                       C   C                       ",
+           "                      D     D                      ",
+           "                     E       E                     ",
+           "                    F         F                    ",
+           "                   G           G                   ",
+           "                  H             H                  ",
+           "                 I               I                 ",
+           "                J                 J                ",
+           "               K                   K               ",
+           "              L                     L              ",
+           "             M                       M             ",
+           "            N                         N            ",
+           "           O                           O           ",
+           "          P                             P          ",
+           "         Q                               Q         ",
+           "        R                                 R        ",
+           "       S                                   S       ",
+           "      T                                     T      ",
+           "     U                                       U     ",
+           "    V                                         V    ",
+           "   W                                           W   ",
+           "  X                                             X  ",
+           " Y                                               Y ",
+           "Z                                                 Z",
+           " Y                                               Y ",
+           "  X                                             X  ",
+           "   W                                           W   ",
+           "    V                                         V    ",
+           "     U                                       U     ",
+           "      T                                     T      ",
+           "       S                                   S       ",
+           "        R                                 R        ",
+           "         Q                               Q         ",
+           "          P                             P          ",
+           "           O                           O           ",
+           "            N                         N            ",
+           "             M                       M             ",
+           "              L                     L              ",
+           "               K                   K               ",
+           "                J                 J                ",
+           "                 I               I                 ",
+           "                  H             H                  ",
+           "                   G           G                   ",
+           "                    F         F                    ",
+           "                     E       E                     ",
+           "                      D     D                      ",
+           "                       C   C                       ",
+           "                        B B                        ",
+           "                         A                         ",
+       ]
+   );
+}
+
+// 53
+#[test]
+fn empty_spiral() {
+   let expected: Vec<Vec<u32>> = Vec::new();
+   assert_eq!(spiral_matrix(0), expected);
+}
+
+#[test]
+//#[ignore]
+fn size_one_spiral() {
+   let mut expected: Vec<Vec<u32>> = Vec::new();
+   expected.push(vec![1]);
+   assert_eq!(spiral_matrix(1), expected);
+}
+#[test]
+//#[ignore]
+fn size_two_spiral() {
+   let mut expected: Vec<Vec<u32>> = Vec::new();
+   expected.push(vec![1, 2]);
+   expected.push(vec![4, 3]);
+   assert_eq!(spiral_matrix(2), expected);
+}
+
+#[test]
+//#[ignore]
+fn size_three_spiral() {
+   let mut expected: Vec<Vec<u32>> = Vec::new();
+   expected.push(vec![1, 2, 3]);
+   expected.push(vec![8, 9, 4]);
+   expected.push(vec![7, 6, 5]);
+   assert_eq!(spiral_matrix(3), expected);
+}
+#[test]
+//#[ignore]
+fn size_four_spiral() {
+   let mut expected: Vec<Vec<u32>> = Vec::new();
+   expected.push(vec![1, 2, 3, 4]);
+   expected.push(vec![12, 13, 14, 5]);
+   expected.push(vec![11, 16, 15, 6]);
+   expected.push(vec![10, 9, 8, 7]);
+   assert_eq!(spiral_matrix(4), expected);
+}
+#[test]
+//#[ignore]
+fn size_five_spiral() {
+   let mut expected: Vec<Vec<u32>> = Vec::new();
+   expected.push(vec![1, 2, 3, 4, 5]);
+   expected.push(vec![16, 17, 18, 19, 6]);
+   expected.push(vec![15, 24, 25, 20, 7]);
+   expected.push(vec![14, 23, 22, 21, 8]);
+   expected.push(vec![13, 12, 11, 10, 9]);
+   assert_eq!(spiral_matrix(5), expected);
+}
+
+// 54
+#[test]
+fn single_digits() {
+   let palindromes = get_palindrome_products(1, 9);
+   assert_eq!(min(&palindromes), Some(1));
+   assert_eq!(max(&palindromes), Some(9));
+}
+
+#[test]
+//#[ignore]
+fn double_digits() {
+   let palindromes = get_palindrome_products(10, 99);
+   assert_eq!(min(&palindromes), Some(121));
+   assert_eq!(max(&palindromes), Some(9009));
+}
+
+#[test]
+//#[ignore]
+fn triple_digits() {
+   let palindromes = get_palindrome_products(100, 999);
+   assert_eq!(min(&palindromes), Some(10201));
+   assert_eq!(max(&palindromes), Some(906609));
+}
+
+#[test]
+//#[ignore]
+fn four_digits() {
+   let palindromes = get_palindrome_products(1000, 9999);
+   assert_eq!(min(&palindromes), Some(1002001));
+   assert_eq!(max(&palindromes), Some(99000099));
+}
+
+#[test]
+//#[ignore]
+fn empty_result_for_smallest_palindrome() {
+   assert_eq!(min(&get_palindrome_products(1002, 1003)), None);
+}
+
+#[test]
+//#[ignore]
+fn empty_result_for_largest_palindrome() {
+   assert_eq!(max(&get_palindrome_products(15, 15)), None);
+}
+
+#[test]
+//#[ignore]
+fn error_smallest_palindrome_when_min_gt_max() {
+   assert_eq!(min(&get_palindrome_products(1000, 1)), None);
+}
+
+#[test]
+//#[ignore]
+fn error_largest_palindrome_when_min_st_max() {
+   assert_eq!(max(&get_palindrome_products(2, 1)), None);
+}
+
+// 56
+use std::fs;
+
+static ILIAD_CONTENT: &'static str = "Achilles sing, O Goddess! Peleus' son;
+His wrath pernicious, who ten thousand woes
+Caused to Achaia's host, sent many a soul
+Illustrious into Ades premature,
+And Heroes gave (so stood the will of Jove)
+To dogs and to all ravening fowls a prey,
+When fierce dispute had separated once
+The noble Chief Achilles from the son
+Of Atreus, Agamemnon, King of men.
+";
+
+static MIDSUMMER_NIGHT_CONTENT: &'static str = "I do entreat your grace to pardon me.
+I know not by what power I am made bold,
+Nor how it may concern my modesty,
+In such a presence here to plead my thoughts;
+But I beseech your grace that I may know
+The worst that may befall me in this case,
+If I refuse to wed Demetrius.
+";
+
+static PARADISE_LOST_CONTENT: &'static str = "Of Mans First Disobedience, and the Fruit
+Of that Forbidden Tree, whose mortal tast
+Brought Death into the World, and all our woe,
+With loss of Eden, till one greater Man
+Restore us, and regain the blissful Seat,
+Sing Heav'nly Muse, that on the secret top
+Of Oreb, or of Sinai, didst inspire
+That Shepherd, who first taught the chosen Seed
+";
+
+/// In The White Night
+/// A poem by Alexander Blok(https://en.wikipedia.org/wiki/Alexander_Blok)
+/// a Russian poet who is regarded as one of the most important figures of the Silver Age of Russian Poetry
+/// You can read the translation here: https://lyricstranslate.com/ru/белой-ночью-месяц-красный-white-night-crimson-crescent.html
+static IN_THE_WHITE_NIGHT_CONTENT: &'static str = "Белой ночью месяц красный
+Выплывает в синеве.
+Бродит призрачно-прекрасный,
+Отражается в Неве.
+Мне провидится и снится
+Исполпенье тайных дум.
+В вас ли доброе таится,
+Красный месяц, тихий шум?..
+";
+
+struct Fixture<'a> {
+   file_names: &'a [&'a str],
+}
+
+impl<'a> Fixture<'a> {
+   fn new(file_names: &'a [&'a str]) -> Self {
+       Fixture { file_names }
+   }
+
+   fn set_up(&self) {
+       let file_name_content_pairs = self
+           .file_names
+           .iter()
+           .cloned()
+           .map(|file_name| {
+               if file_name.ends_with("iliad.txt") {
+                   (file_name, ILIAD_CONTENT)
+               } else if file_name.ends_with("midsummer_night.txt") {
+                   (file_name, MIDSUMMER_NIGHT_CONTENT)
+               } else if file_name.ends_with("paradise_lost.txt") {
+                   (file_name, PARADISE_LOST_CONTENT)
+               } else {
+                   (file_name, IN_THE_WHITE_NIGHT_CONTENT)
+               }
+           })
+           .collect::<Vec<(&str, &str)>>();
+
+       set_up_files(&file_name_content_pairs);
+   }
+}
+
+impl<'a> Drop for Fixture<'a> {
+   fn drop(&mut self) {
+       tear_down_files(self.file_names);
+   }
+}
+
+fn set_up_files(files: &[(&str, &str)]) {
+   for (file_name, file_content) in files {
+       fs::write(file_name, file_content).expect(&format!(
+           "Error setting up file '{}' with the following content:\n{}",
+           file_name, file_content
+       ));
+   }
+}
+
+fn tear_down_files(files: &[&str]) {
+   for file_name in files {
+       fs::remove_file(file_name).expect(&format!("Could not delete file '{}'", file_name));
+   }
+}
+
+/// This macro is here so that every test case had its own set of files to be used in test.
+/// The approach is to create required files for every test case and to append test name to the
+/// file names (so for test with a name 'test_one_file_one_match_no_flags' and a required file
+/// 'iliad.txt' there would be created a file with a name
+/// 'test_one_file_one_match_no_flags_iliad.txt').
+/// This allows us to create files for every test case with no intersection between them.
+///
+/// A better way would be to create required set of files at the start of tests run and to
+/// delete them after every test is finished, but there is no trivial way to create such
+/// a test fixture in standard Rust, and Exercism restricts the usage of external dependencies
+/// in test files. Therefore the above approach is chosen.
+///
+/// If you have an idea about a better way to implement test fixture for this exercise,
+/// please submit PR to the Rust Exercism track: https://github.com/exercism/rust
+macro_rules! set_up_test_case {
+   ($(#[$flag:meta])+ $test_case_name:ident(pattern=$pattern:expr, flags=[$($grep_flag:expr),*], files=[$($file:expr),+], expected=[$($expected:expr),*])) => {
+       $(#[$flag])+
+       fn $test_case_name() {
+           let pattern = $pattern;
+
+           let flags = vec![$($grep_flag),*];
+
+           let files = vec![$(concat!(stringify!($test_case_name), "_" , $file)),+];
+
+           let expected = vec![$($expected),*];
+
+           process_grep_case(&pattern, &flags, &files, &expected);
+       }
+   };
+   ($(#[$flag:meta])+ $test_case_name:ident(pattern=$pattern:expr, flags=[$($grep_flag:expr),*], files=[$($file:expr),+], prefix_expected=[$($expected:expr),*])) => {
+       $(#[$flag])+
+       fn $test_case_name() {
+           let pattern = $pattern;
+
+           let flags = vec![$($grep_flag),*];
+
+           let files = vec![$(concat!(stringify!($test_case_name), "_" , $file)),+];
+
+           let expected = vec![$(concat!(stringify!($test_case_name), "_", $expected)),*];
+
+           process_grep_case(&pattern, &flags, &files, &expected);
+       }
+
+   }
+}
+
+fn process_grep_case(pattern: &str, flags: &[&str], files: &[&str], expected: &[&str]) {
+   let test_fixture = Fixture::new(files);
+
+   test_fixture.set_up();
+
+   let flags = Flags::new(flags);
+
+   let grep_result = grep(pattern, &flags, files).unwrap();
+
+   assert_eq!(grep_result, expected);
+}
+
+// Test returning a Result
+
+#[test]
+fn test_nonexistent_file_returns_error() {
+   let pattern = "Agamemnon";
+
+   let flags = Flags::new(&vec![]);
+
+   let files = vec!["test_nonexistent_file_returns_error_iliad.txt"];
+
+   assert!(grep(&pattern, &flags, &files).is_err());
+}
+
+#[test]
+//#[ignore]
+fn test_grep_returns_result() {
+   let pattern = "Agamemnon";
+
+   let flags = Flags::new(&vec![]);
+
+   let files = vec!["test_grep_returns_result_iliad.txt"];
+
+   let test_fixture = Fixture::new(&files);
+
+   test_fixture.set_up();
+
+   assert!(grep(&pattern, &flags, &files).is_ok());
+}
+
+// Test grepping a single file
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_one_match_no_flags(
+   pattern = "Agamemnon",
+   flags = [],
+   files = ["iliad.txt"],
+   expected = ["Of Atreus, Agamemnon, King of men."]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_one_match_print_line_numbers_flag(
+   pattern = "Forbidden",
+   flags = ["-n"],
+   files = ["paradise_lost.txt"],
+   expected = ["2:Of that Forbidden Tree, whose mortal tast"]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_one_match_caseinsensitive_flag(
+   pattern = "FORBIDDEN",
+   flags = ["-i"],
+   files = ["paradise_lost.txt"],
+   expected = ["Of that Forbidden Tree, whose mortal tast"]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_one_match_print_file_names_flag(
+   pattern = "Forbidden",
+   flags = ["-l"],
+   files = ["paradise_lost.txt"],
+   prefix_expected = ["paradise_lost.txt"]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_one_match_match_entire_lines_flag(
+   pattern = "With loss of Eden, till one greater Man",
+   flags = ["-x"],
+   files = ["paradise_lost.txt"],
+   expected = ["With loss of Eden, till one greater Man"]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_one_match_multiple_flags(
+   pattern = "OF ATREUS, Agamemnon, KIng of MEN.",
+   flags = ["-x", "-i", "-n"],
+   files = ["iliad.txt"],
+   expected = ["9:Of Atreus, Agamemnon, King of men."]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_several_matches_no_flags(
+   pattern = "may",
+   flags = [],
+   files = ["midsummer_night.txt"],
+   expected = [
+       "Nor how it may concern my modesty,",
+       "But I beseech your grace that I may know",
+       "The worst that may befall me in this case,"
+   ]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_several_matches_print_line_numbers_flag(
+   pattern = "may",
+   flags = ["-n"],
+   files = ["midsummer_night.txt"],
+   expected = [
+       "3:Nor how it may concern my modesty,",
+       "5:But I beseech your grace that I may know",
+       "6:The worst that may befall me in this case,"
+   ]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_several_matches_match_entire_lines_flag(
+   pattern = "may",
+   flags = ["-x"],
+   files = ["midsummer_night.txt"],
+   expected = []
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_several_matches_caseinsensitive_flag(
+   pattern = "ACHILLES",
+   flags = ["-i"],
+   files = ["iliad.txt"],
+   expected = [
+       "Achilles sing, O Goddess! Peleus' son;",
+       "The noble Chief Achilles from the son"
+   ]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_several_matches_inverted_flag(
+   pattern = "Of",
+   flags = ["-v"],
+   files = ["paradise_lost.txt"],
+   expected = [
+       "Brought Death into the World, and all our woe,",
+       "With loss of Eden, till one greater Man",
+       "Restore us, and regain the blissful Seat,",
+       "Sing Heav'nly Muse, that on the secret top",
+       "That Shepherd, who first taught the chosen Seed"
+   ]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_one_file_no_matches_various_flags(
+   pattern = "Gandalf",
+   flags = ["-n", "-l", "-x", "-i"],
+   files = ["iliad.txt"],
+   expected = []
+));
+
+// Test grepping multiples files at once
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_one_match_no_flags(
+   pattern = "Agamemnon",
+   flags = [],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = ["iliad.txt:Of Atreus, Agamemnon, King of men."]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_several_matches_no_flags(
+   pattern = "may",
+   flags = [],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = [
+       "midsummer_night.txt:Nor how it may concern my modesty,",
+       "midsummer_night.txt:But I beseech your grace that I may know",
+       "midsummer_night.txt:The worst that may befall me in this case,"
+   ]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_several_matches_print_line_numbers_flag(
+   pattern = "that",
+   flags = ["-n"],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = [
+       "midsummer_night.txt:5:But I beseech your grace that I may know",
+       "midsummer_night.txt:6:The worst that may befall me in this case,",
+       "paradise_lost.txt:2:Of that Forbidden Tree, whose mortal tast",
+       "paradise_lost.txt:6:Sing Heav'nly Muse, that on the secret top"
+   ]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_one_match_print_file_names_flag(
+   pattern = "who",
+   flags = ["-l"],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = ["iliad.txt", "paradise_lost.txt"]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_several_matches_caseinsensitive_flag(
+   pattern = "TO",
+   flags = ["-i"],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = [
+       "iliad.txt:Caused to Achaia's host, sent many a soul",
+       "iliad.txt:Illustrious into Ades premature,",
+       "iliad.txt:And Heroes gave (so stood the will of Jove)",
+       "iliad.txt:To dogs and to all ravening fowls a prey,",
+       "midsummer_night.txt:I do entreat your grace to pardon me.",
+       "midsummer_night.txt:In such a presence here to plead my thoughts;",
+       "midsummer_night.txt:If I refuse to wed Demetrius.",
+       "paradise_lost.txt:Brought Death into the World, and all our woe,",
+       "paradise_lost.txt:Restore us, and regain the blissful Seat,",
+       "paradise_lost.txt:Sing Heav'nly Muse, that on the secret top"
+   ]
+));
+
+set_up_test_case!(
+   #[test]
+   //#[ignore]
+   test_multiple_files_several_matches_caseinsensitive_flag_utf8(
+       pattern = "В", // This letter stands for cyrillic 'Ve' and not latin 'B'. Therefore there should be no matches from paradise_lost.txt
+       flags = ["-i"],
+       files = ["paradise_lost.txt", "in_the_white_night.txt"],
+       prefix_expected = [
+           "in_the_white_night.txt:Выплывает в синеве.",
+           "in_the_white_night.txt:Отражается в Неве.",
+           "in_the_white_night.txt:Мне провидится и снится",
+           "in_the_white_night.txt:В вас ли доброе таится,"
+       ]
+   )
+);
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_several_matches_inverted_flag(
+   pattern = "a",
+   flags = ["-v"],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = [
+       "iliad.txt:Achilles sing, O Goddess! Peleus' son;",
+       "iliad.txt:The noble Chief Achilles from the son",
+       "midsummer_night.txt:If I refuse to wed Demetrius."
+   ]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_one_match_match_entire_lines_flag(
+   pattern = "But I beseech your grace that I may know",
+   flags = ["-x"],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = ["midsummer_night.txt:But I beseech your grace that I may know"]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_one_match_multiple_flags(
+   pattern = "WITH LOSS OF EDEN, TILL ONE GREATER MAN",
+   flags = ["-n", "-i", "-x"],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   prefix_expected = ["paradise_lost.txt:4:With loss of Eden, till one greater Man"]
+));
+
+set_up_test_case!(#[test]
+//#[ignore]
+test_multiple_files_no_matches_various_flags(
+   pattern = "Frodo",
+   flags = ["-n", "-i", "-x", "-l"],
+   files = ["iliad.txt", "midsummer_night.txt", "paradise_lost.txt"],
+   expected = []
+));
+
+// 58
+/// Create a Decimal from a string literal
+///
+/// Use only when you _know_ that your value is valid.
+fn decimal(input: &str) -> Decimal {
+   Decimal::try_from(input).expect("That was supposed to be a valid value")
+}
+
+/// Some big and precise values we can use for testing. [0] + [1] == [2]
+const BIGS: [&'static str; 3] = [
+   "100000000000000000000000000000000000000000000.00000000000000000000000000000000000000001",
+   "100000000000000000000000000000000000000000000.00000000000000000000000000000000000000002",
+   "200000000000000000000000000000000000000000000.00000000000000000000000000000000000000003",
+];
+
+// test simple properties of required operations
+#[test]
+fn test_eq() {
+   assert!(decimal("0.0") == decimal("0.0"));
+   assert!(decimal("1.0") == decimal("1.0"));
+   for big in BIGS.iter() {
+       assert!(decimal(big) == decimal(big));
+   }
+}
+
+#[test]
+//#[ignore]
+fn test_ne() {
+   assert!(decimal("0.0") != decimal("1.0"));
+   assert!(decimal(BIGS[0]) != decimal(BIGS[1]));
+}
+
+#[test]
+//#[ignore]
+fn test_gt() {
+   for slice_2 in BIGS.windows(2) {
+       assert!(decimal(slice_2[1]) > decimal(slice_2[0]));
+       assert!(!(decimal(slice_2[0]) > decimal(slice_2[1])));
+   }
+}
+
+#[test]
+//#[ignore]
+fn test_lt() {
+   for slice_2 in BIGS.windows(2) {
+       assert!(decimal(slice_2[0]) < decimal(slice_2[1]));
+       assert!(!(decimal(slice_2[1]) < decimal(slice_2[0])));
+   }
+}
+
+#[test]
+//#[ignore]
+fn test_add() {
+   assert_eq!(decimal("0.1") + decimal("0.2"), decimal("0.3"));
+   assert_eq!(decimal(BIGS[0]) + decimal(BIGS[1]), decimal(BIGS[2]));
+   assert_eq!(decimal(BIGS[1]) + decimal(BIGS[0]), decimal(BIGS[2]));
+}
+
+#[test]
+//#[ignore]
+fn test_sub() {
+   assert_eq!(decimal(BIGS[2]) - decimal(BIGS[1]), decimal(BIGS[0]));
+   assert_eq!(decimal(BIGS[2]) - decimal(BIGS[0]), decimal(BIGS[1]));
+}
+
+#[test]
+//#[ignore]
+fn test_mul() {
+   for big in BIGS.iter() {
+       assert_eq!(decimal(big) * decimal("2"), decimal(big) + decimal(big));
+   }
+}
+
+// test identities
+#[test]
+//#[ignore]
+fn test_add_id() {
+   assert_eq!(decimal("1.0") + decimal("0.0"), decimal("1.0"));
+   assert_eq!(decimal("0.1") + decimal("0.0"), decimal("0.1"));
+   assert_eq!(decimal("0.0") + decimal("1.0"), decimal("1.0"));
+   assert_eq!(decimal("0.0") + decimal("0.1"), decimal("0.1"));
+}
+
+#[test]
+//#[ignore]
+fn test_sub_id() {
+   assert_eq!(decimal("1.0") - decimal("0.0"), decimal("1.0"));
+   assert_eq!(decimal("0.1") - decimal("0.0"), decimal("0.1"));
+}
+
+#[test]
+//#[ignore]
+fn test_mul_id() {
+   assert_eq!(decimal("2.1") * decimal("1.0"), decimal("2.1"));
+   assert_eq!(decimal("1.0") * decimal("2.1"), decimal("2.1"));
+}
+
+#[test]
+//#[ignore]
+fn test_gt_positive_and_zero() {
+   assert!(decimal("1.0") > decimal("0.0"));
+   assert!(decimal("0.1") > decimal("0.0"));
+}
+
+#[test]
+//#[ignore]
+fn test_gt_negative_and_zero() {
+   assert!(decimal("0.0") > decimal("-0.1"));
+   assert!(decimal("0.0") > decimal("-1.0"));
+}
+
+// tests of arbitrary precision behavior
+#[test]
+//#[ignore]
+fn test_add_uneven_position() {
+   assert_eq!(decimal("0.1") + decimal("0.02"), decimal("0.12"));
+}
+
+#[test]
+//#[ignore]
+fn test_eq_vary_sig_digits() {
+   assert!(decimal("0") == decimal("0000000000000.0000000000000000000000"));
+   assert!(decimal("1") == decimal("00000000000000001.000000000000000000"));
+}
+
+#[test]
+//#[ignore]
+fn test_add_vary_precision() {
+   assert_eq!(
+       decimal("100000000000000000000000000000000000000000000")
+           + decimal("0.00000000000000000000000000000000000000001"),
+       decimal(BIGS[0])
+   )
+}
+
+#[test]
+//#[ignore]
+fn test_cleanup_precision() {
+   assert_eq!(
+       decimal("10000000000000000000000000000000000000000000000.999999999999999999999999998",)
+           + decimal(
+               "10000000000000000000000000000000000000000000000.000000000000000000000000002",
+           ),
+       decimal("20000000000000000000000000000000000000000000001")
+   )
+}
+
+#[test]
+//#[ignore]
+fn test_gt_varying_positive_precisions() {
+   assert!(decimal("1.1") > decimal("1.01"));
+   assert!(decimal("1.01") > decimal("1.0"));
+   assert!(decimal("1.0") > decimal("0.1"));
+   assert!(decimal("0.1") > decimal("0.01"));
+}
+
+#[test]
+//#[ignore]
+fn test_gt_positive_and_negative() {
+   assert!(decimal("1.0") > decimal("-1.0"));
+   assert!(decimal("1.1") > decimal("-1.1"));
+   assert!(decimal("0.1") > decimal("-0.1"));
+}
+
+#[test]
+//#[ignore]
+fn test_gt_varying_negative_precisions() {
+   assert!(decimal("-0.01") > decimal("-0.1"));
+   assert!(decimal("-0.1") > decimal("-1.0"));
+   assert!(decimal("-1.0") > decimal("-1.01"));
+   assert!(decimal("-1.01") > decimal("-1.1"));
+}
+
+// test signed properties
+#[test]
+//#[ignore]
+fn test_negatives() {
+   assert!(Decimal::try_from("-1").is_some());
+   assert_eq!(decimal("0") - decimal("1"), decimal("-1"));
+   assert_eq!(decimal("5.5") + decimal("-6.5"), decimal("-1"));
+}
+
+#[test]
+//#[ignore]
+fn test_explicit_positive() {
+   assert_eq!(decimal("+1"), decimal("1"));
+   assert_eq!(decimal("+2.0") - decimal("-0002.0"), decimal("4"));
+}
+
+#[test]
+//#[ignore]
+fn test_multiply_by_negative() {
+   assert_eq!(decimal("5") * decimal("-0.2"), decimal("-1"));
+   assert_eq!(decimal("-20") * decimal("-0.2"), decimal("4"));
+}
+
+#[test]
+//#[ignore]
+fn test_simple_partial_cmp() {
+   assert!(decimal("1.0") < decimal("1.1"));
+   assert!(decimal("0.00000000000000000000001") > decimal("-20000000000000000000000000000"));
+}
+
+// test carrying rules
+// these tests are designed to ensure correctness of implementations for which the
+// integer and fractional parts of the number are stored separately
+#[test]
+//#[ignore]
+fn test_carry_into_integer() {
+   assert_eq!(decimal("0.901") + decimal("0.1"), decimal("1.001"))
+}
+
+#[test]
+//#[ignore]
+fn test_carry_into_fractional_with_digits_to_right() {
+   assert_eq!(decimal("0.0901") + decimal("0.01"), decimal("0.1001"))
+}
+
+#[test]
+//#[ignore]
+fn test_add_carry_over_negative() {
+   assert_eq!(decimal("-1.99") + decimal("-0.01"), decimal("-2.0"))
+}
+
+#[test]
+//#[ignore]
+fn test_sub_carry_over_negative() {
+   assert_eq!(decimal("-1.99") - decimal("0.01"), decimal("-2.0"))
+}
+
+#[test]
+//#[ignore]
+fn test_add_carry_over_negative_with_fractional() {
+   assert_eq!(decimal("-1.99") + decimal("-0.02"), decimal("-2.01"))
+}
+
+#[test]
+//#[ignore]
+fn test_sub_carry_over_negative_with_fractional() {
+   assert_eq!(decimal("-1.99") - decimal("0.02"), decimal("-2.01"))
+}
+
+#[test]
+//#[ignore]
+fn test_carry_from_rightmost_one() {
+   assert_eq!(decimal("0.09") + decimal("0.01"), decimal("0.1"))
+}
+
+#[test]
+//#[ignore]
+fn test_carry_from_rightmost_more() {
+   assert_eq!(decimal("0.099") + decimal("0.001"), decimal("0.1"))
+}
+
+#[test]
+//#[ignore]
+fn test_carry_from_rightmost_into_integer() {
+   assert_eq!(decimal("0.999") + decimal("0.001"), decimal("1.0"))
+}
+
+// test arithmetic borrow rules
+#[test]
+//#[ignore]
+fn test_add_borrow() {
+   assert_eq!(decimal("0.01") + decimal("-0.0001"), decimal("0.0099"))
+}
+
+#[test]
+//#[ignore]
+fn test_sub_borrow() {
+   assert_eq!(decimal("0.01") - decimal("0.0001"), decimal("0.0099"))
+}
+
+#[test]
+//#[ignore]
+fn test_add_borrow_integral() {
+   assert_eq!(decimal("1.0") + decimal("-0.01"), decimal("0.99"))
+}
+
+#[test]
+//#[ignore]
+fn test_sub_borrow_integral() {
+   assert_eq!(decimal("1.0") - decimal("0.01"), decimal("0.99"))
+}
+
+#[test]
+//#[ignore]
+fn test_add_borrow_integral_zeroes() {
+   assert_eq!(decimal("1.0") + decimal("-0.99"), decimal("0.01"))
+}
+
+#[test]
+//#[ignore]
+fn test_sub_borrow_integral_zeroes() {
+   assert_eq!(decimal("1.0") - decimal("0.99"), decimal("0.01"))
+}
+
+#[test]
+//#[ignore]
+fn test_borrow_from_negative() {
+   assert_eq!(decimal("-1.0") + decimal("0.01"), decimal("-0.99"))
+}
+
+#[test]
+//#[ignore]
+fn test_add_into_fewer_digits() {
+   assert_eq!(decimal("0.011") + decimal("-0.001"), decimal("0.01"))
+}
+
+// misc tests of arithmetic properties
+#[test]
+//#[ignore]
+fn test_sub_into_fewer_digits() {
+   assert_eq!(decimal("0.011") - decimal("0.001"), decimal("0.01"))
+}
+
+#[test]
+//#[ignore]
+fn test_add_away_decimal() {
+   assert_eq!(decimal("1.1") + decimal("-0.1"), decimal("1.0"))
+}
+
+#[test]
+//#[ignore]
+fn test_sub_away_decimal() {
+   assert_eq!(decimal("1.1") - decimal("0.1"), decimal("1.0"))
+}
+
+// 59
+use std::iter::FromIterator;
+
+fn process_anagram_case(word: &str, inputs: &[&str], expected: &[&str]) {
+   let result = anagrams_for(word, inputs);
+
+   let expected: HashSet<&str> = HashSet::from_iter(expected.iter().cloned());
+
+   assert_eq!(result, expected);
+}
+
+#[test]
+fn test_no_matches() {
+   let word = "diaper";
+
+   let inputs = ["hello", "world", "zombies", "pants"];
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_detect_simple_anagram() {
+   let word = "ant";
+
+   let inputs = ["tan", "stand", "at"];
+
+   let outputs = vec!["tan"];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_does_not_confuse_different_duplicates() {
+   let word = "galea";
+
+   let inputs = ["eagle"];
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_eliminate_anagram_subsets() {
+   let word = "good";
+
+   let inputs = ["dog", "goody"];
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_detect_anagram() {
+   let word = "listen";
+
+   let inputs = ["enlists", "google", "inlets", "banana"];
+
+   let outputs = vec!["inlets"];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_multiple_anagrams() {
+   let word = "allergy";
+
+   let inputs = [
+       "gallery",
+       "ballerina",
+       "regally",
+       "clergy",
+       "largely",
+       "leading",
+   ];
+
+   let outputs = vec!["gallery", "regally", "largely"];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_case_insensitive_anagrams() {
+   let word = "Orchestra";
+
+   let inputs = ["cashregister", "Carthorse", "radishes"];
+
+   let outputs = vec!["Carthorse"];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_unicode_anagrams() {
+   let word = "ΑΒΓ";
+
+   // These words don't make sense, they're just greek letters cobbled together.
+   let inputs = ["ΒΓΑ", "ΒΓΔ", "γβα"];
+
+   let outputs = vec!["ΒΓΑ", "γβα"];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_misleading_unicode_anagrams() {
+   // Despite what a human might think these words different letters, the input uses Greek A and B
+   // while the list of potential anagrams uses Latin A and B.
+   let word = "ΑΒΓ";
+
+   let inputs = ["ABΓ"];
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_does_not_detect_a_word_as_its_own_anagram() {
+   let word = "banana";
+
+   let inputs = ["banana"];
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_does_not_detect_a_differently_cased_word_as_its_own_anagram() {
+   let word = "banana";
+
+   let inputs = ["bAnana"];
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_does_not_detect_a_differently_cased_unicode_word_as_its_own_anagram() {
+   let word = "ΑΒΓ";
+
+   let inputs = ["ΑΒγ"];
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+#[test]
+//#[ignore]
+fn test_same_bytes_different_chars() {
+   let word = "a⬂"; // 61 E2 AC 82
+
+   let inputs = ["€a"]; // E2 82 AC 61
+
+   let outputs = vec![];
+
+   process_anagram_case(word, &inputs, &outputs);
+}
+
+// 60
+#[test]
+fn test_methionine() {
+   let info = parse(make_pairs());
+   assert_eq!(info.name_for("AUG"), Some("methionine"));
+}
+
+#[test]
+//#[ignore]
+fn test_cysteine_tgt() {
+   let info = parse(make_pairs());
+   assert_eq!(info.name_for("UGU"), Some("cysteine"));
+}
+
+#[test]
+//#[ignore]
+fn test_stop() {
+   let info = parse(make_pairs());
+   assert_eq!(info.name_for("UAA"), Some("stop codon"));
+}
+
+#[test]
+//#[ignore]
+fn test_valine() {
+   let info = parse(make_pairs());
+   assert_eq!(info.name_for("GUU"), Some("valine"));
+}
+
+#[test]
+//#[ignore]
+fn test_isoleucine() {
+   let info = parse(make_pairs());
+   assert_eq!(info.name_for("AUU"), Some("isoleucine"));
+}
+
+#[test]
+//#[ignore]
+fn test_arginine_name() {
+   let info = parse(make_pairs());
+   assert_eq!(info.name_for("CGA"), Some("arginine"));
+   assert_eq!(info.name_for("AGA"), Some("arginine"));
+   assert_eq!(info.name_for("AGG"), Some("arginine"));
+}
+
+#[test]
+//#[ignore]
+fn empty_is_invalid() {
+   let info = parse(make_pairs());
+   assert!(info.name_for("").is_none());
+}
+
+#[test]
+//#[ignore]
+fn x_is_not_shorthand_so_is_invalid() {
+   let info = parse(make_pairs());
+   assert!(info.name_for("VWX").is_none());
+}
+
+#[test]
+//#[ignore]
+fn too_short_is_invalid() {
+   let info = parse(make_pairs());
+   assert!(info.name_for("AU").is_none());
+}
+
+#[test]
+//#[ignore]
+fn too_long_is_invalid() {
+   let info = parse(make_pairs());
+   assert!(info.name_for("ATTA").is_none());
+}
+
+#[test]
+//#[ignore]
+fn test_translates_rna_strand_into_correct_protein() {
+   let info = parse(make_pairs());
+   assert_eq!(
+       info.of_rna("AUGUUUUGG"),
+       Some(vec!["methionine", "phenylalanine", "tryptophan"])
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_stops_translation_if_stop_codon_present() {
+   let info = parse(make_pairs());
+   assert_eq!(
+       info.of_rna("AUGUUUUAA"),
+       Some(vec!["methionine", "phenylalanine"])
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_stops_translation_of_longer_strand() {
+   let info = parse(make_pairs());
+   assert_eq!(
+       info.of_rna("UGGUGUUAUUAAUGGUUU"),
+       Some(vec!["tryptophan", "cysteine", "tyrosine"])
+   );
+}
+
+#[test]
+//#[ignore]
+fn test_invalid_codons() {
+   let info = parse(make_pairs());
+   assert!(info.of_rna("CARROT").is_none());
+}
+
+// The input data constructor. Returns a list of codon, name pairs.
+fn make_pairs() -> Vec<(&'static str, &'static str)> {
+   let grouped = vec![
+       ("isoleucine", vec!["AUU", "AUC", "AUA"]),
+       ("valine", vec!["GUU", "GUC", "GUA", "GUG"]),
+       ("phenylalanine", vec!["UUU", "UUC"]),
+       ("methionine", vec!["AUG"]),
+       ("cysteine", vec!["UGU", "UGC"]),
+       ("alanine", vec!["GCU", "GCC", "GCA", "GCG"]),
+       ("glycine", vec!["GGU", "GGC", "GGA", "GGG"]),
+       ("proline", vec!["CCU", "CCC", "CCA", "CCG"]),
+       ("threonine", vec!["ACU", "ACC", "ACA", "ACG"]),
+       ("serine", vec!["AGU", "AGC"]),
+       ("tyrosine", vec!["UAU", "UAC"]),
+       ("tryptophan", vec!["UGG"]),
+       ("glutamine", vec!["CAA", "CAG"]),
+       ("asparagine", vec!["AAU", "AAC"]),
+       ("histidine", vec!["CAU", "CAC"]),
+       ("glutamic acid", vec!["GAA", "GAG"]),
+       ("aspartic acid", vec!["GAU", "GAC"]),
+       ("lysine", vec!["AAA", "AAG"]),
+       ("arginine", vec!["CGU", "CGC", "CGA", "CGG", "AGA", "AGG"]),
+       ("stop codon", vec!["UAA", "UAG", "UGA"]),
+   ];
+   let mut pairs = Vec::<(&'static str, &'static str)>::new();
+   for (name, codons) in grouped.into_iter() {
+       for codon in codons {
+           pairs.push((codon, name));
+       }
+   }
+   pairs.sort_by(|&(_, a), &(_, b)| a.cmp(b));
+   return pairs;
+}
+
+// 62
+// Tests for book-store
+//
+// Generated by [script][script] using [canonical data][canonical-data]
+//
+// [script]: https://github.com/exercism/rust/blob/master/bin/init_exercise.py
+// [canonical-data]: https://raw.githubusercontent.com/exercism/problem-specifications/master/exercises/book-store/canonical_data.json
+
+/// Process a single test case for the property `total`
+///
+/// All cases for the `total` property are implemented
+/// in terms of this function.
+///
+/// Expected input format: ('basket', 'targetgrouping')
+fn process_total_case(input: (Vec<u32>, Vec<Vec<u32>>), expected: u32) {
+   assert_eq!(lowest_price(&input.0), expected)
+}
+
+// Return the total basket price after applying the best discount.
+// Calculate lowest price for a shopping basket containing books only from
+// a single series.  There is no discount advantage for having more than
+// one copy of any single book in a grouping.
+
+#[test]
+/// Only a single book
+fn test_only_a_single_book() {
+   process_total_case((vec![1], vec![vec![1]]), 800);
+}
+
+#[test]
+//#[ignore]
+/// Two of the same book
+fn test_two_of_the_same_book() {
+   process_total_case((vec![2, 2], vec![vec![2], vec![2]]), 1_600);
+}
+
+#[test]
+//#[ignore]
+/// Empty basket
+fn test_empty_basket() {
+   process_total_case((vec![], vec![]), 0);
+}
+
+#[test]
+//#[ignore]
+/// Two different books
+fn test_two_different_books() {
+   process_total_case((vec![1, 2], vec![vec![1, 2]]), 1_520);
+}
+
+#[test]
+//#[ignore]
+/// Three different books
+fn test_three_different_books() {
+   process_total_case((vec![1, 2, 3], vec![vec![1, 2, 3]]), 2_160);
+}
+
+#[test]
+//#[ignore]
+/// Four different books
+fn test_four_different_books() {
+   process_total_case((vec![1, 2, 3, 4], vec![vec![1, 2, 3, 4]]), 2_560);
+}
+
+#[test]
+//#[ignore]
+/// Five different books
+fn test_five_different_books() {
+   process_total_case((vec![1, 2, 3, 4, 5], vec![vec![1, 2, 3, 4, 5]]), 3_000);
+}
+
+#[test]
+//#[ignore]
+/// Two groups of four is cheaper than group of five plus group of three
+fn test_two_groups_of_four_is_cheaper_than_group_of_five_plus_group_of_three() {
+   process_total_case(
+       (
+           vec![1, 1, 2, 2, 3, 3, 4, 5],
+           vec![vec![1, 2, 3, 4], vec![1, 2, 3, 5]],
+       ),
+       5_120,
+   );
+}
+
+#[test]
+//#[ignore]
+/// Group of four plus group of two is cheaper than two groups of three
+fn test_group_of_four_plus_group_of_two_is_cheaper_than_two_groups_of_three() {
+   process_total_case(
+       (vec![1, 1, 2, 2, 3, 4], vec![vec![1, 2, 3, 4], vec![1, 2]]),
+       4_080,
+   );
+}
+
+#[test]
+//#[ignore]
+/// Two each of first 4 books and 1 copy each of rest
+fn test_two_each_of_first_4_books_and_1_copy_each_of_rest() {
+   process_total_case(
+       (
+           vec![1, 1, 2, 2, 3, 3, 4, 4, 5],
+           vec![vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4]],
+       ),
+       5_560,
+   );
+}
+
+#[test]
+//#[ignore]
+/// Two copies of each book
+fn test_two_copies_of_each_book() {
+   process_total_case(
+       (
+           vec![1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
+           vec![vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5]],
+       ),
+       6_000,
+   );
+}
+
+#[test]
+//#[ignore]
+/// Three copies of first book and 2 each of remaining
+fn test_three_copies_of_first_book_and_2_each_of_remaining() {
+   process_total_case(
+       (
+           vec![1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 1],
+           vec![vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5], vec![1]],
+       ),
+       6_800,
+   );
+}
+
+#[test]
+//#[ignore]
+/// Three each of first 2 books and 2 each of remaining books
+fn test_three_each_of_first_2_books_and_2_each_of_remaining_books() {
+   process_total_case(
+       (
+           vec![1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 1, 2],
+           vec![vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5], vec![1, 2]],
+       ),
+       7_520,
+   );
+}
+
+#[test]
+//#[ignore]
+/// Four groups of four are cheaper than two groups each of five and three
+fn test_four_groups_of_four_are_cheaper_than_two_groups_each_of_five_and_three() {
+   process_total_case(
+       (
+           vec![1, 1, 2, 2, 3, 3, 4, 5, 1, 1, 2, 2, 3, 3, 4, 5],
+           vec![
+               vec![1, 2, 3, 4],
+               vec![1, 2, 3, 5],
+               vec![1, 2, 3, 4],
+               vec![1, 2, 3, 5],
+           ],
+       ),
+       10_240,
+   );
+}

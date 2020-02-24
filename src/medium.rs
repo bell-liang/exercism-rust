@@ -3674,3 +3674,1412 @@ impl<T: Ord + Clone> CustomSet<T> {
             .collect::<Vec<_>>())
     }
 }
+
+// 49 算术谜题
+/*
+写一个函数来解决字母谜题.
+
+Alphametics是一个拼图，其中单词中的字母被数字替换.
+
+例如SEND + MORE = MONEY:
+
+
+  S E N D
+  M O R E +
+-----------
+M O N E Y
+用有效数字替换它们会给出:
+
+
+  9 5 6 7
+  1 0 8 5 +
+-----------
+1 0 6 5 2
+这是正确的，因为每个字母都被不同的数字替换，之后单词会被翻译成数字，然后产生有效的总和。
+
+每个字母必须代表不同的数字，并且多位数的首数字不能是 0 。
+
+写一个函数来解决字母谜题.
+*/
+use std::collections::HashMap;
+#[allow(dead_code)]
+pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
+    let temp_str_list: Vec<&str> = input
+        .split(|x| x == '+' || x == '=')
+        .filter(|s| *s != "")
+        .map(|s: &str| s.trim())
+        .collect();
+    let mut res: HashMap<char, u8> = HashMap::new();
+    let mut first_big = vec![];
+    for s in temp_str_list.clone() {
+        for (idx, c) in s.chars().enumerate() {
+            let d = res.entry(c.clone()).or_insert(0);
+            if idx == 0 {
+                first_big.push(c.clone());
+                *d = 1;
+            }
+        }
+    }
+    let mut key_list = vec![];
+    for c in res.keys() {
+        key_list.push(c.clone());
+    }
+    key_list.sort();
+    let mut left: u32;
+    let mut right;
+    loop {
+        println!("{:?}", res);
+        let d_list = temp_str_list
+            .clone()
+            .into_iter()
+            .map(|s| {
+                s.chars()
+                    .fold(0, |sum, c| sum * 10 + *res.get(&c).unwrap() as u32)
+            })
+            .collect::<Vec<u32>>();
+        println!("{:?}", temp_str_list);
+        println!("{:?}", d_list);
+        left = d_list[0..(d_list.len()-1)].iter().sum();
+        right = d_list[d_list.len()-1];
+        if left == right {
+            break;
+        }
+        for i in 0..key_list.len() {
+            let temp = res.get_mut(&key_list[i]).unwrap();
+            if *temp == 9 {
+                if i == key_list.len()-1 {
+                    return None;
+                } else {
+                    if first_big.contains(&key_list[i]) {
+                        *temp = 1;
+                    } else {
+                        *temp = 0;
+                    }
+                }
+            } else {
+                *temp += 1;
+                break;
+            }
+        }
+    }
+    Some(res)
+}
+
+// 50 两个桶
+/*
+给定两个不同尺寸的桶，演示如何通过两个桶，策略性地传输液体来测量精确的升数.
+
+由于这个数学问题，很容易受到解释/个体方法的影响，因此这些测试代码专门针对期望一个总体解决方案而编写.
+
+为了提供帮助，测试代码首先为桶(1/2)装满。这意味着，若开始时，选择较大的桶装满，那就不会出现，较小的桶装满而较大的桶为空的情况。(也就是说，起点应该用较小桶)；不然这会破坏比较两种方法的目的!
+
+您的程序将作为输入:
+
+桶 1 的大小
+桶 2 的大小
+要达到的理想升数
+首先要装满哪个桶，要么是桶 1 还是桶 2
+您的计划应确定:
+
+达到所需的升数，所需的”移动”总数，包括第一次装满
+哪个桶应该以所需的升数结束(假设这是桶 A) - 要么桶 1 ，要么桶 2
+另一个桶中，剩下多少升(桶 B)
+注意:任何时候对其中一个或两个桶进行更改，都计为一(1)次移动。
+
+示例：桶 1 最多可容纳 7 升，桶 2 最多可容纳 11 升。让我们说桶 1，第一步，持有 7 升，桶 2 持有 8 升(7，8)。如果您清空桶 1，并且不对桶 2 进行任何更改，则分别为 0 升和 8 升(0，8)，这将作为一个”移动”。相反，如果你已经把桶 1 倒入桶 2，直到桶 2 充满，那留下的，桶 1 中的 4 升和桶 2 中的 11 升(4，11)，这也算作只有一个”移动”。
+
+总而言之，唯一有效的行动是:
+
+从一个桶，倒到另一个桶
+清空一个桶，对另一个什么都不做
+装满一个桶，对另一个什么也不做
+*/
+use std::collections::{HashSet, VecDeque, HashMap};
+
+#[derive(PartialEq, Eq, Debug)]
+pub enum Bucket {
+    One,
+    Two,
+}
+
+#[derive(PartialEq, Eq, Debug)]
+pub struct BucketStats {
+    pub moves: u8,
+    pub goal_bucket: Bucket,
+    pub other_bucket: u8,
+}
+
+pub fn solve(capacity_1: u8, capacity_2: u8, goal: u8, start_bucket: &Bucket) -> BucketStats {
+    let state = match start_bucket {
+        Bucket::One => (capacity_1, 0),
+        Bucket::Two => (0, capacity_2),
+    };
+
+    let mut next_search = VecDeque::new();
+    let mut visited = HashSet::new();
+    let mut res: HashMap<(u8, u8), ((u8, u8), &str)> = HashMap::new();
+    let mut moves = 1;
+
+    next_search.push_front(state);
+
+    visited.insert((capacity_1, 0));
+    visited.insert((0, capacity_2));
+
+    let initial = state;
+
+    loop {
+        let mut current_search = next_search;
+        next_search = VecDeque::new();
+
+        for state in current_search.drain(0..) {
+            let (bucket_1, bucket_2) = state;
+            if bucket_1 == goal || bucket_2 == goal {
+                let mut tmp = vec![(state, "end")];
+                let mut val = res.get(&state).unwrap();
+                while val.0 != initial {
+                    tmp.push(*val);
+                    val = res.get(&val.0).unwrap();
+                }
+                tmp.push((val.0, val.1));
+                tmp.reverse();
+                println!("first capacity {}, second capacity {}", capacity_1, capacity_2);
+                println!("{:?}", tmp);
+            }
+            if bucket_1 == goal {
+                return BucketStats {
+                    moves,
+                    goal_bucket: Bucket::One,
+                    other_bucket: bucket_2,
+                }
+            } else if bucket_2 == goal {
+                return BucketStats {
+                    moves,
+                    goal_bucket: Bucket::Two,
+                    other_bucket: bucket_1,
+                }
+            }
+
+            let empty_1 = (0, bucket_2);
+            if !visited.contains(&empty_1) {
+                next_search.push_front(empty_1);
+                visited.insert(empty_1);
+                res.insert(empty_1, (state, "empty_1"));
+            }
+
+            let empty_2 = (bucket_1, 0);
+            if !visited.contains(&empty_2) {
+                next_search.push_front(empty_2);
+                visited.insert(empty_2);
+                res.insert(empty_2, (state, "empty_2"));
+            }
+
+            let fill_1 = (capacity_1, bucket_2);
+            if !visited.contains(&fill_1) {
+                next_search.push_front(fill_1);
+                visited.insert(fill_1);
+                res.insert(fill_1, (state, "fill_1"));
+            }
+
+            let fill_2 = (bucket_1, capacity_2);
+            if !visited.contains(&fill_2) {
+                next_search.push_front(fill_2);
+                visited.insert(fill_2);
+                res.insert(fill_2, (state, "fill_2"));
+            }
+
+            let pour_1_into_2 = if bucket_1 + bucket_2 <= capacity_1 {
+                (bucket_1 + bucket_2, 0)
+            } else {
+                (capacity_1, bucket_1 + bucket_2 - capacity_1)
+            };
+            if !visited.contains(&pour_1_into_2) {
+                next_search.push_front(pour_1_into_2);
+                visited.insert(pour_1_into_2);
+                res.insert(pour_1_into_2, (state, "1<-2"));
+            }
+
+            let pour_2_into_1 = if bucket_1 + bucket_2 <= capacity_2 {
+                (0, bucket_1 + bucket_2)
+            } else {
+                (bucket_1 + bucket_2 - capacity_2, capacity_2)
+            };
+            if !visited.contains(&pour_2_into_1) {
+                next_search.push_front(pour_2_into_1);
+                visited.insert(pour_2_into_1);
+                res.insert(pour_2_into_1, (state, "1->2"));
+            }
+        }
+        moves += 1;
+    }
+}
+
+// 51 猪的拉丁文
+/*
+实现一个从英语翻译成猪拉丁语的程序.
+
+猪拉丁语是一种拼凑的儿童语言，目的是使人困惑。它遵循一些简单的规则(下面)，但是当它说得很快时，对于非儿童(以及非母语者)来说真的很难理解.
+
+规则 1如果一个单词以元音开头，在单词的末尾加上一个”ay”音。请注意，在单词开头的”xr”和”yt”会产生元音(例如 “xray” -> “xrayay”, “yttria” -> “yttriaay”）。
+规则 2如果一个单词以辅音开头，把它移到单词的末尾，然后在单词的末尾加上一个”ay”音。辅音可以由多个辅音组成，例如辅音群(例如”chair” -> “airchay”).
+规则 3如果一个单词以辅音开头，后面跟着”qu”，把它移动到单词的结尾，然后在单词的结尾加上”ay”音(例如，”square” -> “aresquay”).
+规则 4如果一个单词在辅音群后面包含”y”，或者作为两个字母元音的单词的第二个字母(例如，”rhythm” -> “ythmrhay”, “my” -> “ymay”)。
+边缘案例还有一些规则，也有区域性的变化.
+*/
+pub fn translate(input: &str) -> String {
+    let s_list: Vec<&str> = input.split_ascii_whitespace().collect();
+    let mut res = vec![];
+    let y = "aeiou";
+    for s in s_list {
+        let mut tmp = "".to_string();
+        if s.starts_with(|c| y.contains(c))
+            || s.starts_with("xr")
+            || s.starts_with("yt") {
+                tmp.push_str(s);
+                tmp.push_str("ay");
+                res.push(tmp);
+                continue;
+        }
+        if let Some(i) = s.find("qu") {
+            match i {
+                0 | 1 => {
+                    tmp.push_str(s.get((i+2)..).unwrap());
+                    tmp.push_str(s.get(0..(i+2)).unwrap());
+                    tmp.push_str("ay");
+                    res.push(tmp);
+                    continue;
+                },
+                _ => {},
+            }
+        }
+        if let Some(i) = s.find('y') {
+            match i {
+                i if i > 1 => {
+                    if s.get(0..i).unwrap().chars().all(|c| !y.contains(c)) {
+                        tmp.push_str(s.get(i..).unwrap());
+                        tmp.push_str(s.get(0..i).unwrap());
+                        tmp.push_str("ay");
+                        res.push(tmp);
+                        continue;
+                    }
+                }
+                _ => {},
+            }
+        }
+        if let Some(i) = s.find(|c| y.contains(c)) {
+            tmp.push_str(s.get(i..).unwrap());
+            tmp.push_str(s.get(0..i).unwrap());
+            tmp.push_str("ay");
+            res.push(tmp);
+        }
+    }
+    res.join(" ")
+}
+/*
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
+
+use regex::Regex;
+
+// Regular expressions from Python version of exercism
+
+pub fn translate_word(word: &str) -> String {
+   // Prevent creation and compilation at every call.
+   // These are compiled exactly once
+   lazy_static! {
+       // Detects if it starts with a vowel
+       static ref VOWEL: Regex = Regex::new(r"^([aeiou]|y[^aeiou]|xr)[a-z]*").unwrap();
+       // Detects splits for initial consonants
+       static ref CONSONANTS: Regex = Regex::new(r"^([^aeiou]?qu|[^aeiou][^aeiouy]*)([a-z]*)").unwrap();
+   }
+
+   if VOWEL.is_match(word) {
+       String::from(word) + "ay"
+   } else {
+       let caps = CONSONANTS.captures(word).unwrap();
+       String::from(&caps[2]) + &caps[1] + "ay"
+   }
+}
+
+pub fn translate(text: &str) -> String {
+   text.split(" ")
+       .map(|w| translate_word(w))
+       .collect::<Vec<_>>()
+       .join(" ")
+}
+*/
+
+// 52  钻石
+/*
+钻石 kata 将一个字母作为输入，并以菱形输出。给定一个字母，它会打印一个以’A’开头的钻石，并在最宽处提供所提供的字母。
+
+要求
+第一行包含一个’A’.
+最后一行包含一个’A’.
+除第一行和最后一行之外的所有行都有两个完全相同的字母.
+所有行都具有与前导空格一样多的尾随空格.(这可能是 0).
+钻石是水平对称的.
+钻石是垂直对称的.
+钻石具有方形(宽度等于高度).
+字母形成菱形.
+上半部分的字母按升序排列.
+下半部分的字母按降序排列.
+四个角(包含空格)是三角形.
+例子
+在以下示例中，空格表示为·字符.
+
+字母’A’的钻石:
+
+
+A
+字母’C’的钻石:
+
+
+··A··
+·B·B·
+C···C
+·B·B·
+··A··
+字母’E’的钻石:
+
+
+····A····
+···B·B···
+··C···C··
+·D·····D·
+E·······E
+·D·····D·
+··C···C··
+···B·B···
+····A····
+*/
+pub fn get_diamond(c: char) -> Vec<String> {
+    if c == 'A' {
+        return vec!["A".to_string()];
+    }
+    static ABC: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let length = ((c as u8 - 'A' as u8) * 2 + 1) as usize;
+    let mut res: Vec<String> = Vec::with_capacity(length);
+    let mut len = length / 2;
+    let mut tmp = "".to_string();
+    for _ in 0..len {
+        tmp.push(' ');
+    }
+    tmp.push('A');
+    for _ in 0..len {
+        tmp.push(' ');
+    }
+    res.push(tmp);
+    for i in 1..(length / 2 + 1) {
+        len -= 1;
+        tmp = "".to_string();
+        for _ in 0..len {
+            tmp.push(' ');
+        }
+        tmp.push_str(ABC.get(i..i + 1).unwrap());
+        for _ in 0..(i * 2 - 1) {
+            tmp.push(' ');
+        }
+        tmp.push_str(ABC.get(i..i + 1).unwrap());
+        for _ in 0..len {
+            tmp.push(' ');
+        }
+        res.push(tmp);
+    }
+    let mut right = res.get(0..length / 2).unwrap().to_vec();
+    right.reverse();
+    res.extend(right);
+    res
+}
+
+
+// 53 螺旋矩阵
+/*
+给定大小，以螺旋顺序返回数字的方阵.
+
+矩阵应填充自然数字，从左上角的 1​​ 开始，以向内，顺时针螺旋顺序增加，如下例所示:
+
+大小为 3 的螺旋矩阵
+
+1 2 3
+8 9 4
+7 6 5
+尺寸为 4 的螺旋矩阵
+
+ 1  2  3 4
+12 13 14 5
+11 16 15 6
+10  9  8 7
+*/
+pub fn spiral_matrix(size: u32) -> Vec<Vec<u32>> {
+    let mut res = vec![vec![0; size as usize]; size as usize];
+    let mut left = 0 as usize;
+    let mut right = size as usize;
+    let mut up = 0 as usize;
+    let mut down = size as usize;
+    let mut count: u32 = 0;
+    while count != size * size {
+        for j in left..right {
+            count += 1;
+            res[up][j] = count;
+        }
+        up += 1;
+
+        for i in up..down {
+            count += 1;
+            res[i][right - 1] = count;
+        }
+        right -= 1;
+
+        for j in (left..right).rev() {
+            count += 1;
+            res[down - 1][j] = count;
+        }
+        down -= 1;
+
+        for i in (up..down).rev() {
+            count += 1;
+            res[i][left] = count;
+        }
+        left += 1;
+    }
+    res
+}
+
+// 54 回文乘数
+/*
+在给定范围内，检测回文乘数.
+
+回文数是指当数字倒过来时，保持不变的数。例如,121是回文数，但112不是。
+
+给定一系列数字，找出最大和最小回文，这是该范围内数字的乘积.
+
+您的解决方案应该返回最大和最小回文，以及范围内的每个因素。如果最大或最小回文在范围内，有多于一对的因素，则返回所有的对.
+
+例 1
+给定范围[1, 9](包含 1，9)
+
+并给出在这个范围内的列表中，所有可能的乘数:[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 15, 21, 24, 27, 20, 28, 32, 36, 25, 30, 35, 40, 45, 42, 48, 54, 49, 56, 63, 64, 72, 81]
+
+回文乘数都是单数数字(在这种情况下):[1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+最小回文乘数是1。 其因素是(1, 1)。 最大回文乘数是9。 其因素是(1, 9)和(3, 3)。
+
+例 2
+给定范围[10, 99](包含)
+
+最小回文乘数是121。 其因素是(11, 11)。 最大回文乘数是9009。 其因素是(91, 99)
+*/
+pub type Palindrome = u64;
+
+pub fn get_palindrome_products(min: u64, max: u64) -> Vec<Palindrome> {
+    let mut res: Vec<Palindrome> = vec![];
+    for x in min..(max + 1) {
+        for y in x..(max + 1) {
+            let m = x * y;
+            if !res.contains(&m) {
+                let tmp = m.to_string().into_bytes();
+                if tmp.iter().zip(tmp.iter().rev()).all(|(d1, d2)| d1 == d2) {
+                    res.push(m);
+                }
+            }
+        }
+    }
+    res
+}
+
+pub fn min(palindromes: &[Palindrome]) -> Option<Palindrome> {
+    palindromes.iter().map(|d| *d).min()
+}
+
+pub fn max(palindromes: &[Palindrome]) -> Option<Palindrome> {
+    palindromes.iter().map(|d| *d).max()
+}
+
+// 56 grep
+/*
+在文件中，搜索与正则表达式模式匹配的行。返回每个匹配行的行号和内容.
+
+Unixgrep命令可用于搜索，与用户提供的搜索查询匹配的一个或多个文件中的行(称为模式).
+
+该grep命令有三个参数:
+
+用于匹配文件中的行的模式.
+零个或多个标志以自定义匹配行为.
+一个或多个要搜索匹配行的文件.
+你的任务是实现grep函数，应该读取指定文件的内容，找到与指定模式匹配的行，然后将这些行输出为单个字符串。请注意，行应按其找到的顺序输出，第一个文件中的第一个匹配行首先输出。
+
+例如，假设有一个名为”input.txt”的文件，其中包含以下内容:
+
+
+hello
+world
+hello again
+如果我们打电话grep "hello" input.txt，返回的字符串应该是:
+
+
+hello
+hello again
+旗
+如前所述，grep命令还应该支持以下标志:
+
+-n打印每个匹配行的行号.
+-l仅打印包含至少一个匹配行的文件的名称.
+-i使用不区分大小写的比较匹配行.
+-v反转程序 - 收集所有与模式不匹配的行.
+-x仅匹配整行，而不是匹配包含匹配的行.
+如果我们运行grep -n "hello" input.txt，-nflag 将要求匹配的行以其行号作为前缀:
+
+
+1:hello
+3:hello again
+如果我们运行grep -i "HELLO" input.txt，我们将做一个不区分大小写的匹配，输出将是:
+
+
+hello
+hello again
+该grep命令应该一次支持多个标志.
+
+例如，运行grep -l -v "hello" file1.txt file2.txt应该打印不包含字符串”hello”的文件的名称.
+*/
+use std::{fs, path::Path};
+
+#[derive(Debug)]
+pub enum FileAccessError {
+    FileNotFoundErr(String),
+    FileReadError(String),
+}
+
+pub struct Flags {
+    print_line_number: bool,
+    print_file_name: bool,
+    use_case_insensitive_comparison: bool,
+    use_inverted_comparison: bool,
+    match_entire_line: bool,
+}
+
+impl Flags {
+    pub fn new(flags: &[&str]) -> Self {
+        Flags {
+            print_line_number: flags.contains(&"-n"),
+            print_file_name: flags.contains(&"-l"),
+            use_case_insensitive_comparison: flags.contains(&"-i"),
+            use_inverted_comparison: flags.contains(&"-v"),
+            match_entire_line: flags.contains(&"-x"),
+        }
+    }
+}
+
+pub fn get_to_lines(file_name: &str) -> Result<Vec<String>, FileAccessError> {
+    let path = Path::new(file_name);
+
+    if !path.exists() {
+        return Err(FileAccessError::FileNotFoundErr(file_name.to_string()));
+    }
+
+    if let Ok(content) = fs::read_to_string(path) {
+        Ok(content.split("\n").map(|line| line.to_string()).collect())
+    } else {
+        Err(FileAccessError::FileReadError(file_name.to_string()))
+    }
+}
+
+pub fn grep(pattern: &str, flags: &Flags, files: &[&str]) -> Result<Vec<String>, FileAccessError> {
+    let is_multi_file = files.len() > 1;
+    let mut res: Vec<String> = vec![];
+
+    for file_name in files.to_vec() {
+        let file_lines = get_to_lines(file_name)?;
+
+        res.extend(
+            file_lines
+                .iter()
+                .enumerate()
+                .filter(|&(_, line)| {
+                    let mut line = line.clone().to_string();
+                    let mut pattern = pattern.to_string();
+
+                    if flags.use_case_insensitive_comparison {
+                        line = line.to_lowercase();
+                        pattern = pattern.to_lowercase();
+                    }
+                    let mut is_filtered = false;
+                    if line.contains(&pattern) {
+                        is_filtered = true;
+                    }
+                    if flags.match_entire_line {
+                        is_filtered = line == pattern;
+                    }
+                    if flags.use_inverted_comparison {
+                        is_filtered = !line.contains(&pattern);
+                    }
+                    is_filtered
+                })
+                .filter(|(_, line)| !line.is_empty())
+                .map(|(line_number, line)| {
+                    let mut tmp = line.clone();
+
+                    if flags.print_line_number {
+                        tmp.insert_str(0, &format!("{}. ", line_number + 1));
+                    }
+
+                    if is_multi_file {
+                        tmp.insert_str(0, &format!("{} ", file_name));
+                    }
+
+                    if flags.print_file_name {
+                        tmp = file_name.clone().to_string();
+                    }
+
+                    tmp
+                }),
+        );
+    }
+
+    res.dedup_by(|a, b| (*a).eq(b));
+    Ok(res)
+}
+
+// 58 十进制加减乘
+/*
+实现任意精度的Decimal类。
+
+浮点数是计算中非整数实数的最常见表示，它们是由IEEE 754标准定义。它们非常灵活且通用，但它们确实有一些局限性。众所周知，在浮点运算中，0.1 + 0.2 != 0.3。
+
+解决这一问题的方法是，寻找另一种无损的方法来模拟任意精度的非整数 实数。这可能在内存或处理速度方面，不如浮点数有效；但目标是提供准确的结果。
+
+尽管Decimal作为一种自定义类型，我们仍然应该能够将它们视为数字: 而==，<，>，+，-和*操作符都应该按小数进行工作。只是权宜之计，你不需要执行除法，因为任意的精确除法很快就会失控。(如何表示任意精度1/3?)
+
+在 Rust 中，将这些操作用于自定义类型的方法是，实现自定义对象的相关 trait。特别是，您至少需要实现.PartialEq，PartialOrd，Add，Sub和Mul。 严格地说，由于十进制数构成一个总排序，你也应该实现Eq和Ord，尽管这些 trait 并没有被这些测试所检验.
+*/
+use std::cmp::{Eq, Ordering, PartialEq, PartialOrd};
+use std::fmt;
+use std::ops::{Add, Mul, Sub};
+
+#[derive(Debug, Clone)]
+pub struct Decimal {
+    symbol: bool,
+    left: usize,
+    right: Vec<i8>,
+}
+
+impl PartialOrd for Decimal {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(&other))
+    }
+}
+
+impl Ord for Decimal {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self.symbol, other.symbol) {
+            (true, false) => Ordering::Greater,
+            (false, true) => Ordering::Less,
+            (true, true) => {
+                if self.left > other.left {
+                    Ordering::Greater
+                } else if self.left < other.left {
+                    Ordering::Less
+                } else if self.right > other.right {
+                    Ordering::Greater
+                } else if self.right < other.right {
+                    Ordering::Less
+                } else {
+                    Ordering::Equal
+                }
+            }
+            (false, false) => {
+                if self.left < other.left {
+                    Ordering::Greater
+                } else if self.left > other.left {
+                    Ordering::Less
+                } else if self.right < other.right {
+                    Ordering::Greater
+                } else if self.right > other.right {
+                    Ordering::Less
+                } else {
+                    Ordering::Equal
+                }
+            }
+        }
+    }
+}
+
+impl PartialEq for Decimal {
+    fn eq(&self, other: &Self) -> bool {
+        self.symbol == other.symbol && self.left == other.left && self.right == other.right
+    }
+}
+
+impl Eq for Decimal {}
+
+impl fmt::Display for Decimal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let right = self.right.iter().map(|d| d.to_string()).collect::<String>();
+        if self.symbol {
+            write!(f, "{}.{}", self.left, right)
+        } else {
+            write!(f, "-{}.{}", self.left, right)
+        }
+    }
+}
+
+impl Decimal {
+    pub fn try_from(input: &str) -> Decimal {
+        let mut symbol = true;
+        let mut left: usize = 0;
+        let mut right: Vec<i8> = vec![0];
+        let mut tmp= input;
+
+        if input.starts_with("-") {
+            tmp = input.trim_start_matches("-");
+            symbol = false;
+        }
+
+        tmp = tmp.trim_start_matches('0');
+
+        if !input.contains(".") {
+            if !tmp.is_empty() {
+                left = tmp
+                    .chars()
+                    .map(|c| c.to_digit(10).unwrap())
+                    .fold(0, |sum, d| sum * 10 + d as usize);
+            }
+        } else {
+            let inner_tmp: Vec<&str> = tmp.split('.').collect();
+            if !inner_tmp[0].is_empty() {
+                left = inner_tmp[0]
+                    .chars()
+                    .map(|c| c.to_digit(10).unwrap())
+                    .fold(0, |sum, d| (sum * 10 + d as usize) as usize);
+            }
+            let inner_right = inner_tmp[1].trim_end_matches('0');
+            if !inner_right.is_empty() {
+                right = inner_right
+                    .chars()
+                    .map(|c| c.to_digit(10).unwrap() as i8)
+                    .collect();
+            }
+        }
+
+        Decimal {
+            symbol,
+            left,
+            right,
+        }
+    }
+}
+
+impl Add for Decimal {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        let mut symbol = true;
+        let mut left: usize;
+        let mut right: Vec<i8> = vec![0];
+
+        match (self.symbol, other.symbol) {
+            (true, true) | (false, false) => {
+                let mut s_right = self.right;
+                let mut o_right = other.right;
+
+                if s_right.len() > o_right.len() {
+                    for _ in 0..(s_right.len() - o_right.len()) {
+                        o_right.push(0);
+                    }
+                } else if s_right.len() < o_right.len() {
+                    for _ in 0..(o_right.len() - s_right.len()) {
+                        s_right.push(0);
+                    }
+                }
+
+                if !self.symbol {
+                    symbol = false;
+                }
+
+                let mut is_carry = false;
+                let len = s_right.len();
+
+                let mut tmp;
+                for i in (0..len).rev() {
+                    tmp = s_right[i] + o_right[i];
+                    if is_carry {
+                        tmp += 1;
+                        is_carry = false;
+                    }
+                    if tmp > 9 {
+                        tmp %= 10;
+                        is_carry = true;
+                    }
+                    right.push(tmp);
+                }
+                right.reverse();
+                while right.ends_with(&[0]) {
+                    right.pop();
+                }
+                if right.is_empty() {
+                    right.push(0);
+                }
+
+                left = self.left + other.left;
+                if is_carry {
+                    left += 1;
+                }
+            }
+            (true, false) => {
+                let tmp = self
+                    - Decimal {
+                        symbol: true,
+                        left: other.left,
+                        right: other.right,
+                    };
+                symbol = tmp.symbol;
+                left = tmp.left;
+                right = tmp.right;
+            }
+            (false, true) => {
+                let tmp = other
+                    - Decimal {
+                        symbol: true,
+                        left: self.left,
+                        right: self.right,
+                    };
+                symbol = tmp.symbol;
+                left = tmp.left;
+                right = tmp.right;
+            }
+        }
+
+        Decimal {
+            symbol,
+            left,
+            right,
+        }
+    }
+}
+
+impl Sub for Decimal {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        let mut symbol = true;
+        let mut left: usize;
+        let mut right: Vec<i8> = vec![0];
+
+        let inner_self = self.clone();
+        let inner_other = other.clone();
+
+        match (self.symbol, other.symbol) {
+            (true, true) => {
+                let mut s_right = self.right.clone();
+                let mut o_right = other.right.clone();
+
+                if s_right.len() > o_right.len() {
+                    for _ in 0..(s_right.len() - o_right.len()) {
+                        o_right.push(0);
+                    }
+                } else if s_right.len() < o_right.len() {
+                    for _ in 0..(o_right.len() - s_right.len()) {
+                        s_right.push(0);
+                    }
+                }
+
+                let mut big_left = self.left;
+                let mut big_right = s_right.clone();
+
+                let mut small_left = other.left;
+                let mut small_right = o_right.clone();
+
+                if inner_self < inner_other {
+                    big_left = other.left;
+                    big_right = o_right.clone();
+
+                    small_left = self.left;
+                    small_right = s_right.clone();
+
+                    symbol = false;
+                }
+
+                let mut is_borrow = false;
+                let len = s_right.len();
+
+                let mut tmp ;
+                for i in (0..len).rev() {
+                    tmp = big_right[i] - small_right[i];
+                    if is_borrow {
+                        tmp -= 1;
+                        is_borrow = false;
+                    }
+                    if tmp < 0 {
+                        tmp += 10;
+                        is_borrow = true;
+                    }
+                    right.push(tmp);
+                }
+                right.reverse();
+                while right.ends_with(&[0]) {
+                    right.pop();
+                }
+                if right.is_empty() {
+                    right.push(0);
+                }
+
+                left = big_left + small_left;
+                if is_borrow {
+                    left -= 1;
+                }
+            }
+            (false, false) => {
+                let mut s_right = self.right;
+                let mut o_right = other.right;
+
+                if s_right.len() > o_right.len() {
+                    for _ in 0..(s_right.len() - o_right.len()) {
+                        o_right.push(0);
+                    }
+                } else if s_right.len() < o_right.len() {
+                    for _ in 0..(o_right.len() - s_right.len()) {
+                        s_right.push(0);
+                    }
+                }
+
+                let mut big_left = other.left.clone();
+                let mut big_right = o_right.clone();
+
+                let mut small_left = self.left.clone();
+                let mut small_right = s_right.clone();
+
+                if inner_self < inner_other {
+                    big_left = self.left;
+                    big_right = s_right.clone();
+
+                    small_left = other.left;
+                    small_right = o_right.clone();
+
+                    symbol = false;
+                }
+
+                let mut is_borrow = false;
+                let len = s_right.len();
+
+                let mut tmp ;
+                for i in (0..len).rev() {
+                    tmp = big_right[i] - small_right[i];
+                    if is_borrow {
+                        tmp += 1;
+                        is_borrow = false;
+                    }
+                    if tmp < 0 {
+                        tmp += 10;
+                        is_borrow = true;
+                    }
+                    right.push(tmp);
+                }
+                right.reverse();
+                while right.ends_with(&[0]) {
+                    right.pop();
+                }
+                if right.is_empty() {
+                    right.push(0);
+                }
+
+                left = big_left + small_left;
+                if is_borrow {
+                    left -= 1;
+                }
+            }
+            (true, false) => {
+                let tmp = self
+                    + Decimal {
+                        symbol: true,
+                        left: other.left,
+                        right: other.right,
+                    };
+                symbol = true;
+                left = tmp.left;
+                right = tmp.right;
+            }
+            (false, true) => {
+                let tmp = other
+                    + Decimal {
+                        symbol: true,
+                        left: self.left,
+                        right: self.right,
+                    };
+                symbol = false;
+                left = tmp.left;
+                right = tmp.right;
+            }
+        }
+
+        Decimal {
+            symbol,
+            left,
+            right,
+        }
+    }
+}
+
+impl Mul for Decimal {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        let mut symbol = true;
+        let left;
+        let mut right: Vec<i8> = vec![0];
+        
+        let inner_self = self.right.iter().fold(self.left, |a, d| a * 10 + *d as usize);
+        let inner_other = other.right.iter().fold(other.left, |a, d| a * 10 + *d as usize);
+        let mut tmp = inner_self * inner_other;
+
+        for _ in 0..(self.right.len() + other.right.len()) {
+            right.push((tmp % 10) as i8);
+            tmp /= 10;
+        }
+        left = tmp;
+        right.reverse();
+        while right.ends_with(&[0]) {
+            right.pop();
+        }
+
+        match (self.symbol, other.symbol) {
+            (true, false) | (false, true) => {
+                symbol = false;
+            },
+            _ => {},
+        }
+
+        Decimal {
+            symbol,
+            left,
+            right,
+        }
+    }
+}
+
+// 59 字谜
+/*
+给出一个单词和可能的字谜列表，选择正确的子列表.
+
+给出"listen"和候选人名单一样"enlists" "google" "inlets" "banana"程序应该返回一个包含"inlets"的列表。
+*/
+use std::collections::HashSet;
+
+pub fn anagrams_for<'a>(word: &str, input: &[&'a str]) -> HashSet<&'a str> {
+    let word = word.to_lowercase();
+    input
+        .iter()
+        .filter(|s| {
+            let s = (**s).to_lowercase();
+            s != word &&
+                s.chars().all(|c| word.contains(c))
+        })
+        .cloned()
+        .collect()
+}
+
+// 60 蛋白质转译
+/*
+将 RNA 序列转译成蛋白质.
+
+RNA 可以分解为三个称为密码子的核苷酸序列，然后转译成多肽，如下:
+
+RNA:"AUGUUUUCU"=>转译成
+
+密码子:"AUG"， "UUU"， "UCU"=>其成为具有以下序列的多肽=>
+
+蛋白:"Methionine"， "Phenylalanine"， "Serine"
+
+这有 64 个密码子，而这些密码子又相当于 20 个氨基酸；然而，在本练习中，所有密码子序列和所得氨基酸都不重要。如果它适用于一个密码子，该程序应该适用于所有这些密码子。但是，您可以随意扩展测试套件中的列表以包含它们.
+
+还有三个终止密码子(也称为’STOP’密码子)；如果遇到任何这些密码子(通过核糖体)，那么所有转译结束，并终止蛋白质。
+
+之后的所有后续密码子都会被忽略，如下所示:
+
+RNA:"AUGUUUUCUUAAAUG"=>
+
+密码:"AUG"， "UUU"， "UCU"， "UAA"， "AUG"=>
+
+蛋白:"Methionine"， "Phenylalanine"， "Serine"
+
+注意终止密码子"UAA"终止转译，最终的蛋氨酸，不会转译成蛋白质序列。
+
+以下是本练习所需的密码子和产生的氨基酸。
+
+密码子	蛋白
+AUG	蛋氨酸
+UUU，UUC	苯丙氨酸
+UUA，UUG	亮氨酸
+UCU，UCC，UCA，UCG	丝氨酸
+UAU，UAC	酪氨酸
+UGU，UGC	半胱氨酸
+UGG	色氨酸
+UAA，UAG，UGA	STOP
+*/
+use std::collections::HashMap;
+
+pub struct CodonsInfo<'a> {
+    codons: HashMap<&'a str, &'a str>,
+}
+
+impl<'a> CodonsInfo<'a> {
+    pub fn name_for(&self, codon: &str) -> Option<&'a str> {
+        self.codons.get(codon).map(|pro| *pro)
+    }
+
+    pub fn of_rna(&self, rna: &str) -> Option<Vec<&'a str>> {
+        rna
+            .chars()
+            .collect::<Vec<char>>()
+            .chunks(3)
+            .map(|s| self.name_for(&s.iter().collect::<String>()))
+            .take_while(|s| s.is_none() || s.unwrap() != "stop codon")
+            .collect()
+    }
+}
+
+pub fn parse<'a>(pairs: Vec<(&'a str, &'a str)>) -> CodonsInfo<'a> {
+    CodonsInfo {
+        codons: pairs.into_iter().collect()
+    }
+}
+
+// 62 书店买书
+/*
+为了尝试鼓励，畅销 5 书系列书籍的销售，书店决定提供多书购买的折扣。
+
+这五本书中的任何一本都要花 8 美元.
+
+但是，如果您购买两本不同的书籍，那么这两本书将获得 5%的折扣。
+
+如果您购买 3 本不同的书籍，您将获得 10%的折扣。
+
+如果您购买 4 本不同的书籍，您将获得 20%的折扣。
+
+如果您全部购买 5 件，即可获得 25%的折扣。
+
+注意：如果您购买了 4 本书，但不同的书只有 3 本，那么您可以在 3 本书中获得 10%的折扣，但是第 4 本书的价格仍为 8 美元。
+
+你的任务是写一段代码，来计算购物车(这 5 本书的任意搭配)的价格(只包含同一系列的书籍)，给予尽可能大的折扣。
+
+例如，购物车若是下面的书，那价格是多少?
+
+第一本书的 2 份
+第二本书的 2 份
+第三本书的 2 份
+第四本书的 1 份
+第五本书的 1 份
+将这 8 本书分组的一种方法是:
+
+第 1 组 5 本书 -> 25%折扣(第 1，第 2，第 3，第 4，第 5)
+还有 1 组 3 本书 -> 10%折扣(第 1 名，第 2 名，第 3 名)
+这将总共给出:
+
+5 本书，25%的折扣
+还有 3 本书可享受 10%的折扣
+导致:
+
+5 x(8 - 2.00)== 5 x 6.00 == $ 30.00
+还有 3 x(8 - 0.80)== 3 x 7.20 == 21.60 美元
+总计 51.60 美元
+
+但是，将这 8 本书分组的另一种方法是:
+
+第 1 组 4 本书 -> 20%折扣(第 1，第 2，第 3，第 4)
+还有 1 组 4 本书 -> 20%折扣(第 1，第 2，第 3，第 5)
+这将总共给出:
+
+4 本书，20%的折扣
+还有 4 本书，20%的折扣
+导致:
+
+4 x(8 - 1.60)== 4 x 6.40 == 25.60 美元
+还有 4 x(8 - 1.60)== 4 x 6.40 == 25.60 美元
+总计 51.20 美元
+
+51.20 美元是最大折扣的价格.
+*/
+use std::collections::HashMap;
+
+pub fn lowest_price(books: &[u32]) -> u32 {
+    
+    let mut book_price_orders: HashMap<usize, Vec<Vec<Vec<u32>>>> = HashMap::new(); // 哈希表，用以存储价格及对应分组表
+    // 整理书籍类别及数量
+    let mut book_num_hashmap: HashMap<u32, u32> = HashMap::new();
+    for book in books {
+        let num = book_num_hashmap.entry(*book).or_insert(0);
+        *num += 1;
+    }
+    let mut book_num_list: Vec<(u32, u32)> = book_num_hashmap
+        .iter()
+        .map(|(key, value)| (*key, *value))
+        .collect();
+    book_num_list.sort_by(|a, b| b.1.cmp(&a.1));
+    println! {"1. {:?}", book_num_list};
+    // 按照书籍数量以大小分组
+    let mut book_will_buy_list: Vec<Vec<u32>> = vec![];
+    let (book, num) = book_num_list[0];
+    for _ in 0..num {
+        book_will_buy_list.push(vec![book]);
+    }
+    for (book, num) in book_num_list[1..].to_vec() {
+        for i in 0..(num as usize) {
+            book_will_buy_list[i].push(book);
+        }
+    }
+    println!("2. {:?}\n", book_will_buy_list);
+    // 如果所买书籍数量少于 5
+    if book_will_buy_list.len() < 2 {
+        let score: usize = match book_will_buy_list[0].len() {
+            2 => 152,
+            3 => 216,
+            4 => 256,
+            5 => 300,
+            _ => 80,
+        };
+        println!("{}, {:?}", score, book_will_buy_list);
+        book_price_orders.insert(score, vec![book_will_buy_list]);
+        return score as u32;
+    }
+    // 建立原始分组变量用以对比，结束遍历
+    let mut compare = book_will_buy_list.clone();
+    compare.reverse();
+    let mut compare_nums: Vec<usize> = vec![];
+    for list in compare.clone() {
+        compare_nums.push(list.len());
+    }
+    let mut rev_compare_nums = compare_nums.clone();
+    rev_compare_nums.reverse();
+    if compare_nums == rev_compare_nums {
+        let score: usize = compare_nums
+            .iter()
+            .map(|n| match n {
+                2 => 152,
+                3 => 216,
+                4 => 256,
+                5 => 300,
+                _ => 80,
+            })
+            .sum();
+        println!("{}, {:?}", score, book_will_buy_list);
+        book_price_orders.insert(score, vec![book_will_buy_list]);
+        return score as u32;
+    }
+    let mut start: usize = 0; // 索引，移出最后一本书籍转移到别的组里
+    let mut end: usize = book_will_buy_list.clone().len(); // 索引，每次遍历的最后一组
+    let mut book_will_buy_numbers_list: Vec<Vec<usize>> = vec![]; // 所买书籍的数量列表集，用以排除已采用的分组
+
+    let mut old_book_will_buy_list = book_will_buy_list.clone(); // 每次遍历完的最终分组表
+    let mut count = 0;
+    let mut is_pop; // 根据上组是否包含所转移书籍决定是否删除上组最后一本书
+    let mut now_nums = vec![0];
+    while compare_nums != now_nums {
+        println!("新的遍历");
+
+        // 比较每次遍历的最终表与初始表所移出书籍组，若相同，则移出书籍组索引加一
+        if old_book_will_buy_list[start] == compare[start] {
+            start += 1;
+            println!("start + 1");
+            continue;
+        }
+
+        // 第一层循环，遍历
+        for i in (start + 1)..end {
+            let mut new_book_will_buy_list = old_book_will_buy_list.clone();
+            println!("\n第一层循环 inner_i: {}, {:?}", i, new_book_will_buy_list);
+            let changing_book = old_book_will_buy_list[i - 1].last().unwrap();
+            if old_book_will_buy_list[i..]
+                .iter()
+                .any(|list| !list.contains(changing_book))
+            {
+                is_pop = true;
+            } else {
+                continue;
+            }
+            println!("book: {}\n", changing_book);
+            // 第二层循环，遍历
+            for j in i..end {
+                // 若上组不包含待移出书籍，则移除上组书籍
+                if is_pop {
+                    new_book_will_buy_list[j - 1].pop();
+                    println! {"pop"}
+                }
+                // 判断本组是否包含待移出书籍，如包含，则开始下一次循环
+                println!("第二层循环 inner_j: {}", j);
+                if old_book_will_buy_list[j].contains(changing_book) {
+                    is_pop = false;
+                    continue;
+                }
+                if j == end - 2 && old_book_will_buy_list[end - 1].contains(changing_book) {
+                    is_pop = false;
+                } else {
+                    is_pop = true;
+                }
+
+                // 移入待移出书籍
+                new_book_will_buy_list[j].push(*changing_book);
+
+                println!("{:?}", new_book_will_buy_list);
+                // 统计本组书籍数量
+                let mut book_will_buy_numbers: Vec<usize> = vec![];
+                for list in new_book_will_buy_list.clone() {
+                    book_will_buy_numbers.push(list.clone().len());
+                }
+                now_nums = book_will_buy_numbers.clone();
+                book_will_buy_numbers.sort();
+
+                // 如分组数量表已存在，则开始下一次循环
+                if book_will_buy_numbers_list.contains(&book_will_buy_numbers) {
+                    continue;
+                }
+                // 将本组分组数量表加入已存在数量表集，用以比较
+                book_will_buy_numbers_list.push(book_will_buy_numbers.clone());
+
+                // 计算分组价格
+                let score: usize = book_will_buy_numbers
+                    .iter()
+                    .map(|n| match n {
+                        2 => 152,
+                        3 => 216,
+                        4 => 256,
+                        5 => 300,
+                        _ => 80,
+                    })
+                    .sum();
+                // 将价格及对应分组存入哈希表
+                let mut sort_new_book_will_buy_list: Vec<Vec<u32>> = vec![];
+                for list in new_book_will_buy_list.clone() {
+                    let mut temp = list.clone();
+                    temp.sort();
+                    sort_new_book_will_buy_list.push(temp);
+                }
+                sort_new_book_will_buy_list.sort_by(|a, b| b.len().cmp(&a.len()));
+                if let Some(order) = book_price_orders.get_mut(&score) {
+                    order.push(sort_new_book_will_buy_list);
+                } else {
+                    book_price_orders.insert(score, vec![sort_new_book_will_buy_list]);
+                }
+            }
+            old_book_will_buy_list = new_book_will_buy_list.clone();
+            let mut end_compare = new_book_will_buy_list[end - 1].clone();
+            end_compare.sort();
+            let mut compare_end = compare[end - 1].clone();
+            compare_end.sort();
+            if end_compare == compare_end {
+                println!("{:?}, {:?}", end_compare, compare_end);
+                println!("end - 1");
+                end -= 1;
+            }
+        }
+        println!("{}. {:?}", count, old_book_will_buy_list);
+        count += 1;
+        if count == 7 {
+            break;
+        }
+    }
+    let mut price_lists = vec![];
+    for (price, order) in book_price_orders {
+        price_lists.push(price);
+        println!("{}, {:?}", price, order);
+    }
+    *price_lists.iter().min().unwrap() as u32
+}
