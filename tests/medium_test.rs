@@ -4699,7 +4699,7 @@ fn test_puzzle_with_ten_letters() {
 #[test]
 fn test_case_1() {
    assert_eq!(
-       solve(3, 5, 1, &Bucket::One),
+       solve_50(3, 5, 1, &Bucket::One),
        BucketStats {
            moves: 4,
            goal_bucket: Bucket::One,
@@ -4712,7 +4712,7 @@ fn test_case_1() {
 //#[ignore]
 fn test_case_2() {
    assert_eq!(
-       solve(3, 5, 1, &Bucket::Two),
+       solve_50(3, 5, 1, &Bucket::Two),
        BucketStats {
            moves: 8,
            goal_bucket: Bucket::Two,
@@ -4725,7 +4725,7 @@ fn test_case_2() {
 //#[ignore]
 fn test_case_3() {
    assert_eq!(
-       solve(7, 11, 2, &Bucket::One),
+       solve_50(7, 11, 2, &Bucket::One),
        BucketStats {
            moves: 14,
            goal_bucket: Bucket::One,
@@ -4738,7 +4738,7 @@ fn test_case_3() {
 //#[ignore]
 fn test_case_4() {
    assert_eq!(
-       solve(7, 11, 2, &Bucket::Two),
+       solve_50(7, 11, 2, &Bucket::Two),
        BucketStats {
            moves: 18,
            goal_bucket: Bucket::Two,
@@ -4751,7 +4751,7 @@ fn test_case_4() {
 //#[ignore]
 fn test_case_5() {
    assert_eq!(
-       solve(1, 3, 3, &Bucket::Two),
+       solve_50(1, 3, 3, &Bucket::Two),
        BucketStats {
            moves: 1,
            goal_bucket: Bucket::Two,
@@ -4764,7 +4764,7 @@ fn test_case_5() {
 //#[ignore]
 fn test_case_6() {
    assert_eq!(
-       solve(2, 3, 3, &Bucket::One),
+       solve_50(2, 3, 3, &Bucket::One),
        BucketStats {
            moves: 2,
            goal_bucket: Bucket::Two,
@@ -5541,7 +5541,7 @@ test_multiple_files_no_matches_various_flags(
 ///
 /// Use only when you _know_ that your value is valid.
 fn decimal(input: &str) -> Decimal {
-   Decimal::try_from(input).expect("That was supposed to be a valid value")
+   Decimal::try_from(input)
 }
 
 /// Some big and precise values we can use for testing. [0] + [1] == [2]
@@ -5713,7 +5713,6 @@ fn test_gt_varying_negative_precisions() {
 #[test]
 //#[ignore]
 fn test_negatives() {
-   assert!(Decimal::try_from("-1").is_some());
    assert_eq!(decimal("0") - decimal("1"), decimal("-1"));
    assert_eq!(decimal("5.5") + decimal("-6.5"), decimal("-1"));
 }

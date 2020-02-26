@@ -3701,7 +3701,6 @@ M O N E Y
 
 写一个函数来解决字母谜题.
 */
-use std::collections::HashMap;
 #[allow(dead_code)]
 pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
     let temp_str_list: Vec<&str> = input
@@ -3794,7 +3793,7 @@ pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
 清空一个桶，对另一个什么都不做
 装满一个桶，对另一个什么也不做
 */
-use std::collections::{HashSet, VecDeque, HashMap};
+use std::collections::VecDeque;
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Bucket {
@@ -3809,7 +3808,7 @@ pub struct BucketStats {
     pub other_bucket: u8,
 }
 
-pub fn solve(capacity_1: u8, capacity_2: u8, goal: u8, start_bucket: &Bucket) -> BucketStats {
+pub fn solve_50(capacity_1: u8, capacity_2: u8, goal: u8, start_bucket: &Bucket) -> BucketStats {
     let state = match start_bucket {
         Bucket::One => (capacity_1, 0),
         Bucket::Two => (0, capacity_2),
@@ -4353,7 +4352,6 @@ pub fn grep(pattern: &str, flags: &Flags, files: &[&str]) -> Result<Vec<String>,
 在 Rust 中，将这些操作用于自定义类型的方法是，实现自定义对象的相关 trait。特别是，您至少需要实现.PartialEq，PartialOrd，Add，Sub和Mul。 严格地说，由于十进制数构成一个总排序，你也应该实现Eq和Ord，尽管这些 trait 并没有被这些测试所检验.
 */
 use std::cmp::{Eq, Ordering, PartialEq, PartialOrd};
-use std::fmt;
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Clone)]
@@ -4762,7 +4760,6 @@ impl Mul for Decimal {
 
 给出"listen"和候选人名单一样"enlists" "google" "inlets" "banana"程序应该返回一个包含"inlets"的列表。
 */
-use std::collections::HashSet;
 
 pub fn anagrams_for<'a>(word: &str, input: &[&'a str]) -> HashSet<&'a str> {
     let word = word.to_lowercase();
@@ -4815,7 +4812,6 @@ UGU，UGC	半胱氨酸
 UGG	色氨酸
 UAA，UAG，UGA	STOP
 */
-use std::collections::HashMap;
 
 pub struct CodonsInfo<'a> {
     codons: HashMap<&'a str, &'a str>,
@@ -4898,7 +4894,6 @@ pub fn parse<'a>(pairs: Vec<(&'a str, &'a str)>) -> CodonsInfo<'a> {
 
 51.20 美元是最大折扣的价格.
 */
-use std::collections::HashMap;
 
 pub fn lowest_price(books: &[u32]) -> u32 {
     
