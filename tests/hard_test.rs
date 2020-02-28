@@ -1,3 +1,6 @@
+extern crate exercism_rust;
+use exercism_rust::hard::*;
+
 // 1
 /*
 #[test]

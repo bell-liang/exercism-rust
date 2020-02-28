@@ -204,3 +204,198 @@ pub fn annotate(minefield: &[&str]) -> Vec<String> {
     }
     res
  }
+
+// 3 多米诺骨牌
+/*
+制作一个多米诺骨牌.
+
+计算给出的多米诺骨牌的排序方法，使它们形成一个正确的多米诺骨牌链(石头的一半上的数值，与相邻石头的一半上的数值相匹配)，并且(第一块石头和最后一块石头)石头的一半上的数值没有邻居，且它们的数值匹配.
+
+比如，给出石头[2|1]，[2|3]和[1|3]你应该计算一些类似[1|2] [2|3] [3|1]或[3|2] [2|1] [1|3]或[1|3] [3|2] [2|1]的东西等，其中第一个和最后一个数字是相同的。
+
+对于以下石头[1|2]，[4|1]和[2|3]，它的结果骨牌链无效：[4|1] [1|2] [2|3]第一个和最后一个数字不一样。4!= 3
+
+一些测试用例可以在一个骨牌链解决方案中，使用重复的石头，假设使用了多个骨牌集合
+*/
+use std::collections::HashMap;
+
+pub fn chain(input: &[(u8, u8)]) -> Option<Vec<(u8, u8)>> {
+    let mut map: HashMap<u8, HashMap<u8, u8>> = HashMap::new();
+    let mut edges_len = 0;
+    for eg in input.iter() {
+        let (left, right) = *eg;
+
+        let left_edge = map.entry(left).or_insert(HashMap::new());
+        let left_end_point = left_edge.entry(right).or_insert(0);
+        *left_end_point += 1;
+
+        if left != right {
+            edges_len += 1;
+            let right_edge = map.entry(right).or_insert(HashMap::new());
+            let right_end_point = right_edge.entry(left).or_insert(0);
+            *right_end_point += 1;
+        }
+    }
+    let mut current_point = input[0].0;
+    let mut res: Vec<(u8, u8)> = vec![];
+    while edges_len > 0 {
+        let mut new_map = map.clone();
+        let next_points = new_map.get_mut(&current_point).unwrap();
+        let mut list_points: Vec<(u8, usize)> = vec![];
+        for key in next_points.keys() {
+            list_points.push((*key, map.get(key).unwrap().len() - 1));
+        }
+        if list_points.is_empty() {
+            return None;
+        }
+        list_points.sort_by(|a, b| b.1.cmp(&a.1));
+        if !next_points.is_empty() {
+            let tmp_point;
+            let tmp_list_points = list_points.clone();
+            if !tmp_list_points.iter().all(|point| point.0 != current_point) {
+                let inner_list_points = list_points.clone();
+                for (id, point) in inner_list_points.iter().enumerate() {
+                    if point.0 == current_point {
+                        for _ in 0..*(next_points.get(&current_point).unwrap()) {
+                            res.push((current_point, current_point));
+                        }
+                        list_points.remove(id);
+                        next_points.remove(&current_point);
+                        break;
+                    }
+                }
+            }
+            tmp_point = list_points[0].0;
+            let edge_count = next_points.get_mut(&tmp_point).unwrap();
+            *edge_count -= 1;
+            if *edge_count == 0 {
+                next_points.remove(&tmp_point);
+            }
+            let other_edge_count = new_map
+                .get_mut(&tmp_point)
+                .unwrap()
+                .get_mut(&current_point)
+                .unwrap();
+            *other_edge_count -= 1;
+            if *other_edge_count == 0 {
+                new_map.get_mut(&tmp_point).unwrap().remove(&current_point);
+            }
+            edges_len -= 1;
+            res.push((current_point, tmp_point));
+            current_point = tmp_point;
+            map = new_map;
+        } else {
+            break;
+        }
+    }
+    Some(res)
+}
+
+// 4 并发字母频率
+/*
+使用并行计算，文本中的字母频率。
+
+并行性是并行的，也可以按顺序进行。一个常见的例子是计算字母的频率。创建一个函数，返回文本列表中每个字母的总频率，并使用并行性。
+*/
+use std::sync::mpsc::channel;
+use std::thread;
+
+pub fn frequency(input: &[&str], worker_count: usize) -> HashMap<char, usize> {
+    let mut groups: Vec<Vec<String>> = vec![Vec::new(); worker_count];
+    for (id, tmp_str) in input.iter().enumerate() {
+        let id = id % worker_count;
+        groups[id].push(tmp_str.to_string());
+    }
+    fn count(group: Vec<String>) -> HashMap<char, usize> {
+        let mut res: HashMap<char, usize> = HashMap::new();
+        for tmp_str in group {
+            for c in tmp_str.chars() {
+                *res.entry(c).or_insert(0) += 1;
+            }
+        }
+        res
+    }
+    let (tx, rx) = channel();
+    for group in groups {
+        let tx = tx.clone();
+        thread::spawn(move || tx.send(count(group)).unwrap());
+    }
+
+    let mut res: HashMap<char, usize> = HashMap::new();
+    for _ in 0..worker_count {
+        let tmp_res = rx.recv().unwrap();
+        for (c, n) in tmp_res {
+            *res.entry(c).or_insert(0) += n;
+        }
+    }
+    res
+}
+
+// 5 矩形
+/*
+计算 ASCII 图中的矩形的数目，如下所示.
+
+
+   +--+
+  ++  |
++-++--+
+|  |  |
++--+--+
+上面的图表包含 6 个矩形:
+
+
++-----+
+|     |
++-----+
+
+   +--+
+   |  |
+   |  |
+   |  |
+   +--+
+
+   +--+
+   |  |
+   +--+
+
+   +--+
+   |  |
+   +--+
+
++--+
+|  |
++--+
+
+  ++
+  ++
+你可以假设输入总是一个适当的矩形(即每行的长度，等于第一行的长度)。
+*/
+pub fn count(lines: &[&str]) -> u32 {
+   let line_lists = lines
+        .iter()
+        .map(|line| line.chars().collect::<Vec<char>>())
+        .collect::<Vec<Vec<char>>>();
+    let mut res: u32 = 0;
+    let row_len = line_lists.len();
+    let column_len = line_lists[0].len();
+    for row in 0..(row_len - 1) {
+        for column in 0..(column_len - 1) {
+            if line_lists[row][column] == '+' {
+                println!("the first point: [{}, {}]\n", row, column);
+                for j in (column + 1)..column_len {
+                    if line_lists[row][j] == '+' {
+                        println!("the second point: [{}, {}]\n", row, j);
+                        for i in (row + 1)..row_len {
+                            if line_lists[i][j] == '+' && line_lists[i][column] == '+' {
+                                println!("the third point: [{}, {}]", i, j);
+                                println!("the fourth point: [{}, {}]\n", i, column);
+                                res += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    res
+}
